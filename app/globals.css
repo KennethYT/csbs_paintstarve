@@ -1,0 +1,1372 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #121212;
+  --panel: #1c1c1c;
+  --panel-raised: #232323;
+  --border: #2d2d2d;
+  --border-strong: #3a3a3a;
+  --text: #f2f2f2;
+  --subtitle: #f5bf1d;
+  --muted: #a3a3a3;
+  --brand: #d6d6d6;
+  --success: #6ee7b7;
+  --warning: #facc15;
+  --danger: #f87171;
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+
+  /* 課程狀態色票。原本這些顏色是淺色主題的深色調（#15803D / #1D4ED8 / #B91C1C），
+     直接寫在 inline style 裡，放到 #121212 背景上幾乎看不見。
+     以下都以深色底為前提挑選，對比度達 WCAG AA。 */
+  --status-upcoming: #9ca3af;
+  --status-upcoming-bg: #232323;
+  --status-open: #93c5fd;
+  --status-open-bg: #16304f;
+  --status-full: #fca5a5;
+  --status-full-bg: #3d1b1b;
+  --status-enrolled: #6ee7b7;
+  --status-enrolled-bg: #10322a;
+  --status-waitlist: #fcd34d;
+  --status-waitlist-bg: #3a2c11;
+
+  /* 進度條軌道 */
+  --track: #2a2a2a;
+
+  --app-max-width: 1180px;
+  --app-gutter: 24px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.06), transparent 30%),
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.04), transparent 28%),
+    linear-gradient(180deg, #181818 0%, var(--bg) 100%);
+  color: var(--text);
+  font-family: var(--font-manrope), system-ui, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+@keyframes seatPulse {
+  0% {
+    transform: scale(1.3);
+    color: var(--brand);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.glass-panel {
+  background: rgba(24, 24, 24, 0.86);
+  border: 1px solid rgba(68, 68, 68, 0.75);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow);
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
+.btn-brand {
+  background: var(--brand);
+  color: #121212;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  border: 1.5px solid #3a3a3a;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #111111;
+  color: #f5f5f5;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: rgba(214, 214, 214, 0.82);
+  box-shadow: 0 0 0 4px rgba(214, 214, 214, 0.14);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.tab {
+  padding: 12px 8px;
+  border-bottom: 2.5px solid transparent;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--muted);
+  background: transparent;
+}
+
+.tab[data-active="true"] {
+  /* --brand 是接近白色的淺灰，跟骨架灰塊（.skeleton）色調太接近，
+     選到的分頁看起來會像卡住的載入狀態。改用金色 --subtitle 做出明確區隔。 */
+  color: var(--subtitle);
+  border-color: var(--subtitle);
+}
+
+.pulse {
+  display: inline-block;
+  animation: seatPulse 0.5s ease;
+}
+
+.fade-up {
+  animation: fadeUp 0.4s ease;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 50;
+}
+
+.toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 60;
+  background: #0f0f0f;
+  color: #f5f5f5;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid #2f2f2f;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.section-title {
+  font-size: 24px;
+  line-height: 1.15;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+/* ---------------------------------------------------------------
+   應用外框（登入頁以外的所有頁面）
+   --------------------------------------------------------------- */
+
+.app-container {
+  width: 100%;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding-inline: var(--app-gutter);
+}
+
+.app-main {
+  padding-block: 28px 80px;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+}
+
+.app-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 14px;
+  flex-wrap: wrap;
+}
+
+.app-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.app-header__brand-name {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.app-header__nav {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.app-header__user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.app-header__user-name {
+  font-size: 14px;
+  font-weight: 800;
+  max-width: 12ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badge-role {
+  background: var(--panel-raised);
+  color: #d4d4d4;
+  border: 1px solid var(--border-strong);
+}
+
+.btn-ghost {
+  border: 1px solid var(--border-strong);
+  background: #171717;
+  color: #d4d4d4;
+  padding: 8px 12px;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.btn-ghost:hover {
+  background: var(--panel-raised);
+}
+
+.btn-link {
+  background: transparent;
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 13px;
+  padding: 6px 0;
+}
+
+.btn-link:hover {
+  color: var(--text);
+  transform: none;
+}
+
+/* Discord 是唯一的登入路徑，按鈕直接用 Discord 的品牌色好辨識。 */
+.btn-discord {
+  width: 100%;
+  background: #5865f2;
+  color: #ffffff;
+  padding: 13px 16px;
+  font-weight: 900;
+  font-size: 14px;
+  box-shadow: 0 12px 28px rgba(88, 101, 242, 0.28);
+}
+
+.btn-discord:hover {
+  background: #4752c4;
+}
+
+.btn-discord__icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------
+   課程狀態
+   --------------------------------------------------------------- */
+
+.status-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.status-text[data-phase="upcoming"] { color: var(--status-upcoming); }
+.status-text[data-phase="open"] { color: var(--status-open); }
+.status-text[data-phase="full"] { color: var(--status-full); }
+.status-text[data-phase="my-enrolled"] { color: var(--status-enrolled); }
+.status-text[data-phase="my-waitlist"] { color: var(--status-waitlist); }
+
+.btn-status {
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 13px;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.btn-status[data-phase="upcoming"] {
+  background: var(--status-upcoming-bg);
+  color: var(--status-upcoming);
+  border-color: var(--border-strong);
+}
+
+.btn-status[data-phase="open"] {
+  background: var(--status-open-bg);
+  color: var(--status-open);
+  border-color: #1e4a78;
+}
+
+.btn-status[data-phase="full"] {
+  background: var(--status-waitlist-bg);
+  color: var(--status-waitlist);
+  border-color: #7c5a12;
+}
+
+.btn-status[data-phase="my-enrolled"] {
+  background: #2b1c1c;
+  color: #fca5a5;
+  border-color: #7f1d1d;
+}
+
+.btn-status[data-phase="my-waitlist"] {
+  background: #29211a;
+  color: #fdba74;
+  border-color: #9a3412;
+}
+
+.badge-category {
+  background: var(--panel-raised);
+  color: #cfcfcf;
+  border: 1px solid var(--border-strong);
+}
+
+.badge-enrollment[data-phase="enrolled"] {
+  background: var(--status-enrolled-bg);
+  color: var(--status-enrolled);
+}
+
+.badge-enrollment[data-phase="waitlist"] {
+  background: var(--status-waitlist-bg);
+  color: var(--status-waitlist);
+}
+
+.badge-hot {
+  background: #3d1b1b;
+  color: #fca5a5;
+  border: 1px solid #7f1d1d;
+}
+
+/* 名額進度條 */
+.meter {
+  height: 6px;
+  background: var(--track);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.meter--lg {
+  height: 8px;
+}
+
+.meter__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--status-open);
+  transition: width 0.4s ease;
+}
+
+.meter__fill[data-full="true"] {
+  background: var(--status-full);
+}
+
+.meter__label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+/* ---------------------------------------------------------------
+   課程卡片
+   --------------------------------------------------------------- */
+
+.course-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.course-card__link {
+  display: block;
+  min-width: 0;
+}
+
+.course-card__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.course-card__title {
+  font-weight: 900;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.course-card__meta {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+/* 帶圖示的那一行：讓地點圖示與文字對齊，窄螢幕時可換行。 */
+.course-card__meta--icon {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.course-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* 篩選 chip */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.chip {
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  background: var(--panel);
+  color: var(--muted);
+  border: 1.5px solid var(--border);
+}
+
+.chip[data-active="true"] {
+  background: var(--brand);
+  color: #121212;
+  border-color: var(--brand);
+}
+
+/* ---------------------------------------------------------------
+   頁首列 / 清單 / 空狀態 / 骨架
+   --------------------------------------------------------------- */
+
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.page-head__subtitle {
+  color: var(--muted);
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+.search-input {
+  max-width: 280px;
+}
+
+.list-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.list-row:last-child {
+  border-bottom: none;
+}
+
+.empty-state {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--muted);
+  border-style: dashed;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.error-state {
+  padding: 32px 24px;
+  text-align: center;
+  color: var(--status-full);
+  border: 1px solid #7f1d1d;
+  background: #241616;
+  border-radius: 18px;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.8; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #202020, #2a2a2a, #202020);
+  border-radius: 8px;
+  animation: skeletonPulse 1.4s ease-in-out infinite;
+}
+
+.skeleton-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---------------------------------------------------------------
+   Modal
+   --------------------------------------------------------------- */
+
+.modal-card {
+  padding: 30px 26px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+}
+
+.modal-card__icon {
+  font-size: 42px;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+/* 圖示尺寸靠上面的 font-size 繼承（react-icons 預設 1em），這裡只決定顏色。 */
+.modal-card__icon[data-icon="success"] { color: var(--status-enrolled); }
+.modal-card__icon[data-icon="waitlist"] { color: var(--status-waitlist); }
+.modal-card__icon[data-icon="removed"] { color: var(--status-full); }
+
+.modal-card__title {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  margin-bottom: 8px;
+}
+
+.modal-card__body {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.75;
+  margin: 0 0 20px;
+}
+
+.modal-card__button {
+  width: 100%;
+  padding: 12px;
+  font-weight: 900;
+}
+
+/* ---------------------------------------------------------------
+   課表
+   --------------------------------------------------------------- */
+
+.timetable-scroll {
+  overflow-x: auto;
+  margin-bottom: 24px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.timetable {
+  display: grid;
+  grid-template-columns: 90px repeat(7, minmax(110px, 1fr));
+  min-width: 860px;
+}
+
+.timetable__head {
+  padding: 12px;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+}
+
+.timetable__head--period {
+  text-align: left;
+  font-size: 12px;
+  color: var(--muted);
+  border-left: 0;
+}
+
+.timetable__period {
+  padding: 12px;
+  font-size: 12px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.timetable__period-label {
+  font-weight: 900;
+  color: var(--text);
+}
+
+.timetable__cell {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timetable__entry {
+  border-radius: 10px;
+  padding: 8px;
+  font-size: 12.5px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.timetable__entry[data-phase="enrolled"] {
+  background: var(--status-enrolled-bg);
+  color: var(--status-enrolled);
+}
+
+.timetable__entry[data-phase="waitlist"] {
+  background: var(--status-waitlist-bg);
+  color: var(--status-waitlist);
+}
+
+.timetable__entry-status {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.timetable__conflict {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--status-full);
+}
+
+/* ---------------------------------------------------------------
+   表單 / 詳細頁
+   --------------------------------------------------------------- */
+
+.form-card {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.field__label {
+  display: block;
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.detail-card {
+  padding: 32px;
+}
+
+.detail-card__title {
+  font-size: 28px;
+  font-weight: 900;
+  margin-top: 10px;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+}
+
+.detail-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  line-height: 1.7;
+  margin-top: 8px;
+}
+
+.detail-card__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.detail-section {
+  margin-top: 24px;
+}
+
+.detail-section__title {
+  font-weight: 900;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.detail-section__body {
+  color: #cfcfcf;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.detail-syllabus {
+  display: grid;
+  gap: 6px;
+}
+
+.detail-syllabus__item {
+  display: flex;
+  gap: 8px;
+  color: #cfcfcf;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+/* 條目可能折成多行，圖示要固定貼齊第一行而不是被拉長置中。 */
+.detail-syllabus__marker {
+  color: var(--subtitle);
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 5px;
+}
+
+.detail-meter {
+  margin-top: 26px;
+  background: #171717;
+  border-radius: 16px;
+  padding: 18px;
+  border: 1px solid var(--border);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  padding: 20px;
+}
+
+.stat-card__label {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.stat-card__value {
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  margin-top: 6px;
+}
+
+/* ---------------------------------------------------------------
+   登入頁的補充樣式
+   --------------------------------------------------------------- */
+
+.auth-message {
+  font-size: 12.5px;
+  line-height: 1.7;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+
+.auth-message--error {
+  background: #2b1616;
+  color: #fca5a5;
+  border: 1px solid #7f1d1d;
+}
+
+/* ---------------------------------------------------------------
+   應用頁 RWD（原本只有登入頁有斷點）
+   --------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  :root {
+    --app-gutter: 18px;
+  }
+
+  .app-header__inner {
+    gap: 10px;
+  }
+
+  .app-header__nav {
+    order: 3;
+    width: 100%;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 6px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .app-header__nav .tab {
+    white-space: nowrap;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-card {
+    padding: 22px;
+  }
+
+  .detail-card__title {
+    font-size: 23px;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --app-gutter: 14px;
+  }
+
+  .app-main {
+    padding-block: 20px 64px;
+  }
+
+  .grid-auto {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+
+  .page-head {
+    align-items: stretch;
+  }
+
+  .search-input {
+    max-width: none;
+  }
+
+  .app-header__brand-name {
+    font-size: 16px;
+  }
+
+  .app-header__user-name {
+    max-width: 8ch;
+  }
+
+  .course-card,
+  .form-card,
+  .stat-card {
+    padding: 16px;
+  }
+
+  .course-card__footer {
+    gap: 8px;
+  }
+
+  .btn-status {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .list-row {
+    padding: 12px 14px;
+  }
+
+  .toast {
+    right: 14px;
+    left: 14px;
+    bottom: 14px;
+  }
+}
+
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  background: #111111;
+}
+
+.login-hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 14% 14%, rgba(255, 255, 255, 0.1), transparent 26%),
+    radial-gradient(circle at 76% 20%, rgba(255, 255, 255, 0.06), transparent 34%),
+    linear-gradient(145deg, #0f0f0f 0%, #1a1a1a 45%, #222222 100%);
+}
+
+.login-hero__content {
+  position: absolute;
+  z-index: 4;
+  top: 16%;
+  right: 12%;
+  width: min(360px, 34vw);
+  text-align: center;
+}
+
+.login-hero__eyebrow {
+  font-size: 14px;
+  letter-spacing: 0.24em;
+  color: rgba(214, 214, 214, 0.72);
+  margin-bottom: 18px;
+}
+
+.login-hero__title {
+  font-size: clamp(48px, 5vw, 82px);
+  font-weight: 900;
+  letter-spacing: -0.08em;
+  color: rgba(242, 242, 242, 0.92);
+  line-height: 0.95;
+}
+
+.login-hero__subtitle {
+  margin-top: 10px;
+  font-size: clamp(42px, 4vw, 64px);
+  font-weight: 900;
+  letter-spacing: -0.08em;
+  color: rgba(229, 229, 229, 0.84);
+}
+
+.login-hero__text {
+  margin: 22px auto 0;
+  max-width: 300px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: rgba(196, 196, 196, 0.88);
+}
+
+.login-hero__glow {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(18px);
+  opacity: 0.9;
+}
+
+.login-hero__glow--pink {
+  top: 0;
+  left: -8%;
+  width: 34vw;
+  height: 34vw;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 72%);
+}
+
+.login-hero__glow--gold {
+  top: -6%;
+  left: 28%;
+  width: 40vw;
+  height: 28vw;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0) 70%);
+}
+
+.login-hero__glow--green {
+  right: -8%;
+  bottom: -8%;
+  width: 34vw;
+  height: 34vw;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+}
+
+.login-hero__ribbon {
+  position: absolute;
+  transform: skewX(-18deg);
+  opacity: 0.34;
+}
+
+.login-hero__ribbon--top {
+  left: 6%;
+  top: 22%;
+  width: 52%;
+  height: 16%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.2));
+}
+
+.login-hero__ribbon--middle {
+  left: 5%;
+  top: 44%;
+  width: 60%;
+  height: 22%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.18));
+}
+
+.login-hero__ribbon--bottom {
+  left: 18%;
+  bottom: 10%;
+  width: 26%;
+  height: 4.4%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.42));
+}
+
+.login-hero__artboard {
+  position: absolute;
+  inset: 0;
+}
+
+.login-hero__panel {
+  position: absolute;
+  overflow: hidden;
+  box-shadow: 0 30px 70px rgba(70, 95, 130, 0.16);
+}
+
+.login-hero__panel--primary {
+  left: 10%;
+  top: 18%;
+  width: min(44vw, 540px);
+  aspect-ratio: 1.36;
+  border-radius: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.login-hero__panel--secondary {
+  left: 18%;
+  top: 52%;
+  width: min(46vw, 620px);
+  aspect-ratio: 1.44;
+  border-radius: 0;
+  background: linear-gradient(135deg, rgba(34, 34, 34, 0.88), rgba(26, 26, 26, 0.96));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.login-hero__panel-grid {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mix-blend-mode: screen;
+}
+
+.login-hero__panel-orb {
+  position: absolute;
+  width: 44%;
+  aspect-ratio: 1;
+  top: 14%;
+  left: 9%;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(245, 245, 245, 0.66) 0%, rgba(245, 245, 245, 0.18) 36%, rgba(245, 245, 245, 0) 70%);
+  box-shadow: 0 0 0 12px rgba(245, 245, 245, 0.12), 0 0 60px rgba(245, 245, 245, 0.2);
+}
+
+.login-hero__crest-wrap {
+  position: absolute;
+  inset: 8% 10%;
+}
+
+.login-hero__crest {
+  object-fit: contain;
+  opacity: 0.24;
+  filter: grayscale(0.2);
+}
+
+.login-sidebar {
+  min-height: 100vh;
+  background: rgba(17, 17, 17, 0.98);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+}
+
+.login-sidebar__inner {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding: 56px 28px 28px;
+}
+
+.login-sidebar__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.login-sidebar__logo-wrap {
+  width: 92px;
+  height: 92px;
+  display: grid;
+  place-items: center;
+}
+
+.login-sidebar__logo {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.login-sidebar__brand-title {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  margin-bottom: 8px;
+}
+
+.login-sidebar__brand-text {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #9ca3af;
+}
+
+.login-automation-note {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(180deg, rgba(38, 38, 38, 0.94), rgba(25, 25, 25, 0.96));
+  padding: 14px 16px;
+}
+
+.login-automation-note__title {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #d4d4d4;
+  margin-bottom: 6px;
+}
+
+.login-automation-note__text {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #b0b0b0;
+}
+
+.login-sidebar__links {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  font-size: 12px;
+  color: #bcbcbc;
+}
+
+@media (max-width: 1100px) {
+  .login-page {
+    grid-template-columns: minmax(0, 1fr) 340px;
+  }
+
+  .login-hero__content {
+    top: 12%;
+    right: 7%;
+    width: min(340px, 38vw);
+  }
+
+  .login-hero__panel--primary {
+    left: 6%;
+    width: min(50vw, 500px);
+  }
+
+  .login-hero__panel--secondary {
+    left: 12%;
+    width: min(52vw, 560px);
+  }
+}
+
+@media (max-width: 960px) {
+  .login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .login-hero {
+    min-height: 52vh;
+  }
+
+  .login-sidebar {
+    min-height: 0;
+    border-left: 0;
+    border-top: 1px solid rgba(230, 225, 214, 0.88);
+  }
+
+  .login-sidebar__inner {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 28px 20px 28px;
+  }
+
+  .login-sidebar__brand {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .login-hero__content {
+    top: 10%;
+    left: 50%;
+    right: auto;
+    width: min(560px, calc(100% - 36px));
+    transform: translateX(-50%);
+  }
+
+  .login-hero__text {
+    max-width: 440px;
+  }
+
+  .login-hero__panel--primary {
+    left: 5%;
+    top: 42%;
+    width: 54%;
+  }
+
+  .login-hero__panel--secondary {
+    left: 28%;
+    top: 54%;
+    width: 48%;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-hero {
+    min-height: 44vh;
+  }
+
+  .login-hero__content {
+    top: 26px;
+    width: calc(100% - 28px);
+  }
+
+  .login-hero__eyebrow {
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+
+  .login-hero__text {
+    font-size: 13px;
+    line-height: 1.7;
+    margin-top: 16px;
+  }
+
+  .login-hero__panel--primary {
+    top: 48%;
+    left: 2%;
+    width: 62%;
+  }
+
+  .login-hero__panel--secondary {
+    top: 60%;
+    left: 22%;
+    width: 60%;
+  }
+
+  .login-sidebar__inner {
+    padding: 22px 16px 22px;
+    gap: 20px;
+  }
+
+  .login-sidebar__brand {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .login-sidebar__logo-wrap {
+    width: 76px;
+    height: 76px;
+  }
+
+  .login-sidebar__brand-title {
+    font-size: 24px;
+  }
+}
