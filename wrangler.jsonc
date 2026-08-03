@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "csp-paintstarve",
+  "name": "csbs-paintstarve",
   "main": ".open-next/worker.js",
 
   // nodejs_compat 是 @opennextjs/cloudflare 的硬性要求，

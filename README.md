@@ -167,17 +167,24 @@ pooler 是 transaction-mode 的 PgBouncer，會讓 advisory lock 的行為變得
 
 | 設定 | 值 |
 |---|---|
-| Build command | `pnpm build` |
+| Build command | `pnpm build:worker` |
 | Deploy command | `npx opennextjs-cloudflare deploy` |
 | Build variables | `BETTER_AUTH_SECRET`、`BETTER_AUTH_URL` |
 
+> Build command 一定要是 `pnpm build:worker`（=`opennextjs-cloudflare build`），不能只是
+> `pnpm build`（=`next build`）。`opennextjs-cloudflare deploy` 只會讀取已經編譯好的
+> OpenNext 產物（`.open-next/`），它自己不會觸發建置；只跑 `next build` 不會產生
+> `.open-next/`，deploy 階段就會報「Could not find compiled Open Next config」。
+> `build:worker` 內部會自動先跑一次 `next build` 再做 OpenNext 轉換，一個指令就夠了。
+>
 > Deploy command 若維持預設的 `npx wrangler deploy`，wrangler 會判定專案沒設定好而觸發
 > auto-config，自動跑一次 `@opennextjs/cloudflare migrate` 覆寫 `wrangler.jsonc`、
 > `open-next.config.ts` 與 `package.json` scripts。那些改動只存在於 CI 的暫存 checkout，
 > 每次建置都會重來一次。
 >
 > Build variables 要設，是因為 `/login` 是靜態預產生頁面，建置階段就會初始化 better-auth；
-> 缺 `BETTER_AUTH_SECRET` 時它會丟 `You are using the default secret`。
+> 缺 `BETTER_AUTH_SECRET` 時它會丟 `You are using the default secret`；`BETTER_AUTH_URL`
+> 要帶完整協定（`https://...`），只填網域會丟 `Invalid base URL`。
 
 最後把 `<你的網址>/api/auth/callback/discord` 加進 Discord 應用程式的 OAuth2 Redirect URI，
 否則登入會失敗。
