@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { PoolClient } from "@neondatabase/serverless";
-import { pool } from "@/lib/db";
+import { getPool } from "@/lib/db";
 import type {
   Course,
   CourseCategory,
@@ -85,6 +85,7 @@ function pgErrorCode(error: unknown): string | undefined {
  * 人數用 GROUP BY 一次算完，不把全部選課紀錄拉回應用層。
  */
 export async function getCoursesSnapshot(userId: string): Promise<CoursesSnapshot> {
+  const pool = getPool();
   const [rows, counts, mine] = await Promise.all([
     pool.query<CourseRow>(
       `SELECT ${COURSE_COLUMNS} ${COURSE_JOIN_TEACHER} ORDER BY c.day ASC, c."periodIndex" ASC, c.title ASC`
@@ -124,6 +125,7 @@ export async function getCoursesSnapshot(userId: string): Promise<CoursesSnapsho
 }
 
 export async function getCourse(courseId: string, userId: string) {
+  const pool = getPool();
   const { rows } = await pool.query<CourseRow>(
     `SELECT ${COURSE_COLUMNS} ${COURSE_JOIN_TEACHER} WHERE c.id = $1`,
     [courseId]
@@ -164,6 +166,7 @@ export async function getCourse(courseId: string, userId: string) {
 
 /** 名單只有授課教師拿得到。 */
 export async function getRoster(courseId: string, teacherId: string): Promise<CourseRoster> {
+  const pool = getPool();
   const { rows: courseRows } = await pool.query<{ teacherId: string }>(
     `SELECT "teacherId" FROM "Course" WHERE id = $1`,
     [courseId]
@@ -203,6 +206,7 @@ export async function getRoster(courseId: string, teacherId: string): Promise<Co
 }
 
 export async function createCourse(teacherId: string, payload: CreateCoursePayload) {
+  const pool = getPool();
   const { rows } = await pool.query<{ id: string }>(
     `INSERT INTO "Course"
        (id, title, "teacherId", category, day, "periodIndex", location, description, syllabus, capacity, "openAt", "courseDate", "groupCount")
@@ -273,7 +277,7 @@ async function withRetry<T>(run: () => Promise<T>, attempts = 5): Promise<T> {
 
 /** 在一個交易內執行 fn，成功則 COMMIT，失敗則 ROLLBACK，並保證連線歸還。 */
 async function withTransaction<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
-  const client = await pool.connect();
+  const client = await getPool().connect();
 
   try {
     await client.query("BEGIN");

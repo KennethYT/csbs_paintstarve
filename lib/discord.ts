@@ -1,4 +1,4 @@
-import { pool } from "@/lib/db";
+import { getPool } from "@/lib/db";
 import type { Role } from "@/lib/types";
 
 type DiscordMember = {
@@ -45,6 +45,7 @@ export async function resolveDiscordRoleForUser(
     };
   }
 
+  const pool = getPool();
   const { rows } = await pool.query<{ accountId: string }>(
     `SELECT "accountId" FROM account WHERE "userId" = $1 AND "providerId" = $2 LIMIT 1`,
     [userId, "discord"]

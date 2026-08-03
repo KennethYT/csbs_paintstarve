@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { randomUUID } from "node:crypto";
-import { pool } from "../lib/db";
+import { getPool } from "../lib/db";
+
+// 這是一次性腳本，不是在請求範圍內執行，lib/db.ts 的 cache() 在這裡等同沒作用，
+// 呼叫一次拿到一份 Pool 用到腳本結束即可。
+const pool = getPool();
 
 type EnrollmentStatus = "enrolled" | "waitlist";
 

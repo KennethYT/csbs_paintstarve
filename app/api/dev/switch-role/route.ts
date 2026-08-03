@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { pool } from "@/lib/db";
+import { getPool } from "@/lib/db";
 import { getSessionUserFromRequest } from "@/lib/session";
 
 /**
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
   const nextRole = user.role === "teacher" ? "student" : "teacher";
 
-  await pool.query(`UPDATE "user" SET role = $1, "updatedAt" = now() WHERE id = $2`, [
+  await getPool().query(`UPDATE "user" SET role = $1, "updatedAt" = now() WHERE id = $2`, [
     nextRole,
     user.id
   ]);
