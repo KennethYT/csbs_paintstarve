@@ -38,12 +38,15 @@ type CourseRow = {
   capacity: number;
   openAt: Date;
   hot: boolean;
+  courseDate: string;
+  groupCount: number;
   teacherName: string;
 };
 
 const COURSE_COLUMNS = `
   c.id, c.title, c."teacherId", c.category, c.day, c."periodIndex", c.location,
-  c.description, c.syllabus, c.capacity, c."openAt", c.hot, u.name AS "teacherName"
+  c.description, c.syllabus, c.capacity, c."openAt", c.hot,
+  c."courseDate"::text AS "courseDate", c."groupCount", u.name AS "teacherName"
 `;
 
 const COURSE_JOIN_TEACHER = `FROM "Course" c JOIN "user" u ON u.id = c."teacherId"`;
@@ -64,7 +67,9 @@ function toCourse(row: CourseRow, enrolled: number, waitlistCount: number): Cour
     enrolled,
     waitlistCount,
     openAt: row.openAt.getTime(),
-    hot: row.hot
+    hot: row.hot,
+    courseDate: row.courseDate,
+    groupCount: row.groupCount
   };
 }
 
@@ -200,8 +205,8 @@ export async function getRoster(courseId: string, teacherId: string): Promise<Co
 export async function createCourse(teacherId: string, payload: CreateCoursePayload) {
   const { rows } = await pool.query<{ id: string }>(
     `INSERT INTO "Course"
-       (id, title, "teacherId", category, day, "periodIndex", location, description, syllabus, capacity, "openAt")
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+       (id, title, "teacherId", category, day, "periodIndex", location, description, syllabus, capacity, "openAt", "courseDate", "groupCount")
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
      RETURNING id`,
     [
       randomUUID(),
@@ -214,7 +219,9 @@ export async function createCourse(teacherId: string, payload: CreateCoursePaylo
       payload.description,
       payload.syllabus,
       payload.capacity,
-      new Date(payload.openAt)
+      new Date(payload.openAt),
+      payload.courseDate,
+      payload.groupCount
     ]
   );
 

@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   buildPeriodLabel,
   dayLabel,
@@ -77,7 +79,8 @@ function CourseDetail({ courseId }: Readonly<{ courseId: string }>) {
         <h1 className="detail-card__title">{course.title}</h1>
         <div className="muted detail-card__meta">
           <span>
-            {course.teacher} 老師 · {dayLabel(course.day)} {buildPeriodLabel(course.periodIndex)}
+            {course.teacher} 老師 · {dayLabel(course.day)} {buildPeriodLabel(course.periodIndex)} ·
+            開課日 {course.courseDate} · 共 {course.groupCount} 組
           </span>
           <span className="detail-card__meta-item">
             <LocationIcon aria-hidden="true" />
@@ -88,9 +91,9 @@ function CourseDetail({ courseId }: Readonly<{ courseId: string }>) {
 
       <div className="detail-section">
         <h2 className="detail-section__title">課程簡介</h2>
-        <p className="detail-section__body" style={{ margin: 0 }}>
-          {course.description}
-        </p>
+        <div className="detail-section__body markdown-body">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{course.description}</ReactMarkdown>
+        </div>
       </div>
 
       {course.syllabus.length > 0 ? (
@@ -100,7 +103,11 @@ function CourseDetail({ courseId }: Readonly<{ courseId: string }>) {
             {course.syllabus.map((item) => (
               <div key={item} className="detail-syllabus__item">
                 <BulletIcon className="detail-syllabus__marker" aria-hidden="true" />
-                <span>{item}</span>
+                <span className="markdown-body markdown-body--inline">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ p: "span" }}>
+                    {item}
+                  </ReactMarkdown>
+                </span>
               </div>
             ))}
           </div>

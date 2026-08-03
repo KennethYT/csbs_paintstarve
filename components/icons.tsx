@@ -6,6 +6,10 @@ import {
   FiCheckCircle,
   FiChevronRight,
   FiClock,
+  FiCode,
+  FiHash,
+  FiLink,
+  FiList,
   FiMapPin,
   FiTrash2
 } from "react-icons/fi";
@@ -23,6 +27,10 @@ export {
   FiCheckCircle as SuccessIcon,
   FiChevronRight as BulletIcon,
   FiClock as ClockIcon,
+  FiCode as CodeIcon,
+  FiHash as HeadingIcon,
+  FiLink as LinkIcon,
+  FiList as ListIcon,
   FiMapPin as LocationIcon,
   FiTrash2 as RemovedIcon
 };

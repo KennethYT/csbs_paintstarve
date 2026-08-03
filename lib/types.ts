@@ -37,6 +37,10 @@ export type Course = {
   /** epoch milliseconds */
   openAt: number;
   hot: boolean;
+  /** 開課日，確切的日曆日期，格式 YYYY-MM-DD */
+  courseDate: string;
+  /** 這門課分成幾組上課 */
+  groupCount: number;
 };
 
 export type RosterEntry = { id: string; name: string };
@@ -58,6 +62,8 @@ export type CreateCoursePayload = {
   location: string;
   capacity: number;
   openAt: number;
+  courseDate: string;
+  groupCount: number;
 };
 
 export type CreateCourseForm = {
@@ -70,6 +76,8 @@ export type CreateCourseForm = {
   location: string;
   capacity: number;
   openMode: OpenMode;
+  courseDate: string;
+  groupCount: number;
 };
 
 export type ToastState = { message: string } | null;

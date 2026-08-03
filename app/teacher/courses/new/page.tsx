@@ -7,6 +7,7 @@ import { categories, dayLabels, periods } from "@/lib/course-constants";
 import type { CourseCategory, OpenMode } from "@/lib/types";
 import { useClassroom } from "@/components/classroom-store";
 import { BackIcon } from "@/components/icons";
+import { MarkdownTextarea } from "@/components/markdown-editor";
 
 function resolveOpenAt(mode: OpenMode) {
   const now = Date.now();
@@ -14,6 +15,15 @@ function resolveOpenAt(mode: OpenMode) {
   if (mode === "now") return now - 1000;
   if (mode === "soon") return now + 30_000;
   return now + 24 * 3600 * 1000;
+}
+
+/** 用本地時間組出 YYYY-MM-DD，避免 toISOString() 轉 UTC 造成日期跑掉一天。 */
+function todayLocalDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 export default function TeacherCreateCoursePage() {
@@ -30,7 +40,9 @@ export default function TeacherCreateCoursePage() {
     periodIndex: 0,
     location: "",
     capacity: 30,
-    openMode: "now" as OpenMode
+    openMode: "now" as OpenMode,
+    courseDate: todayLocalDate(),
+    groupCount: 1
   });
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -56,7 +68,9 @@ export default function TeacherCreateCoursePage() {
         .map((line) => line.trim())
         .filter(Boolean),
       capacity: form.capacity,
-      openAt: resolveOpenAt(form.openMode)
+      openAt: resolveOpenAt(form.openMode),
+      courseDate: form.courseDate,
+      groupCount: form.groupCount
     });
 
     setIsSubmitting(false);
@@ -88,24 +102,22 @@ export default function TeacherCreateCoursePage() {
           />
         </Field>
 
-        <Field label="課程簡介" htmlFor="course-brief">
-          <textarea
+        <Field label="課程簡介（支援 Markdown）" htmlFor="course-brief">
+          <MarkdownTextarea
             id="course-brief"
-            className="textarea"
             rows={3}
             value={form.brief}
-            onChange={(event) => setForm((current) => ({ ...current, brief: event.target.value }))}
+            onChange={(value) => setForm((current) => ({ ...current, brief: value }))}
             placeholder="一段簡短的課程介紹"
           />
         </Field>
 
-        <Field label="課程大綱（每行一項）" htmlFor="course-syllabus">
-          <textarea
+        <Field label="課程大綱（每行一項，支援 Markdown）" htmlFor="course-syllabus">
+          <MarkdownTextarea
             id="course-syllabus"
-            className="textarea"
             rows={4}
             value={form.syllabus}
-            onChange={(event) => setForm((current) => ({ ...current, syllabus: event.target.value }))}
+            onChange={(value) => setForm((current) => ({ ...current, syllabus: value }))}
             placeholder={"第一週：課程介紹\n第二週：…"}
           />
         </Field>
@@ -180,6 +192,31 @@ export default function TeacherCreateCoursePage() {
               value={form.capacity}
               onChange={(event) =>
                 setForm((current) => ({ ...current, capacity: Number(event.target.value) || 1 }))
+              }
+            />
+          </Field>
+
+          <Field label="開課日期" htmlFor="course-date">
+            <input
+              id="course-date"
+              className="input"
+              type="date"
+              required
+              value={form.courseDate}
+              onChange={(event) => setForm((current) => ({ ...current, courseDate: event.target.value }))}
+            />
+          </Field>
+
+          <Field label="組數" htmlFor="course-group-count">
+            <input
+              id="course-group-count"
+              className="input"
+              type="number"
+              min={1}
+              max={100}
+              value={form.groupCount}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, groupCount: Number(event.target.value) || 1 }))
               }
             />
           </Field>

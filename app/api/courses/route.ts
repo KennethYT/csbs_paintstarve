@@ -66,6 +66,18 @@ export async function POST(request: Request) {
     return jsonError("開放時間不正確。", 400);
   }
 
+  const courseDate = typeof body.courseDate === "string" ? body.courseDate : "";
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(courseDate)) {
+    return jsonError("開課日期不正確。", 400);
+  }
+
+  const groupCount = Number(body.groupCount);
+
+  if (!Number.isInteger(groupCount) || groupCount < 1 || groupCount > 100) {
+    return jsonError("組數必須介於 1 到 100 之間。", 400);
+  }
+
   const syllabus = Array.isArray(body.syllabus)
     ? body.syllabus.filter((line): line is string => typeof line === "string" && line.trim().length > 0)
     : [];
@@ -77,6 +89,8 @@ export async function POST(request: Request) {
     periodIndex,
     capacity,
     openAt,
+    courseDate,
+    groupCount,
     location: typeof body.location === "string" && body.location.trim() ? body.location.trim() : "教室未定",
     description:
       typeof body.description === "string" && body.description.trim()

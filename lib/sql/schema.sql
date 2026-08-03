@@ -80,9 +80,16 @@ CREATE TABLE IF NOT EXISTS "Course" (
   capacity INTEGER NOT NULL,
   "openAt" TIMESTAMPTZ NOT NULL,
   hot BOOLEAN NOT NULL DEFAULT false,
+  -- 開課日：確切的日曆日期，跟「上課星期」（每週固定星期幾）分開存
+  "courseDate" DATE NOT NULL DEFAULT CURRENT_DATE,
+  -- 組數：這門課分成幾組上課
+  "groupCount" INTEGER NOT NULL DEFAULT 1,
   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT now(),
   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+-- 對已存在的資料庫（在這兩欄加入之前就建過表）補上欄位，讓 db:push 保持冪等可重跑
+ALTER TABLE "Course" ADD COLUMN IF NOT EXISTS "courseDate" DATE NOT NULL DEFAULT CURRENT_DATE;
+ALTER TABLE "Course" ADD COLUMN IF NOT EXISTS "groupCount" INTEGER NOT NULL DEFAULT 1;
 CREATE INDEX IF NOT EXISTS "Course_teacherId_idx" ON "Course" ("teacherId");
 
 CREATE TABLE IF NOT EXISTS "Enrollment" (

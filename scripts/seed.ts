@@ -7,6 +7,14 @@ type EnrollmentStatus = "enrolled" | "waitlist";
 const HOUR = 3600 * 1000;
 const DAY = 24 * HOUR;
 
+/** 用本地時間組出 YYYY-MM-DD，避免 toISOString() 轉 UTC 造成日期跑掉一天。 */
+function toLocalDateString(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 type SeedCourse = {
   title: string;
   teacher: string;
@@ -199,8 +207,8 @@ async function main() {
       rows: [course]
     } = await pool.query<{ id: string }>(
       `INSERT INTO "Course"
-         (id, title, "teacherId", category, day, "periodIndex", location, description, syllabus, capacity, "openAt", hot)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+         (id, title, "teacherId", category, day, "periodIndex", location, description, syllabus, capacity, "openAt", hot, "courseDate", "groupCount")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
        RETURNING id`,
       [
         randomUUID(),
@@ -214,7 +222,9 @@ async function main() {
         seed.syllabus,
         seed.capacity,
         new Date(now + seed.openAtOffset),
-        seed.hot
+        seed.hot,
+        toLocalDateString(new Date(now + seed.openAtOffset)),
+        1
       ]
     );
 
