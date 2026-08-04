@@ -38,7 +38,17 @@ if (process.env.NEON_WS_PROXY) {
  * 這種一次性 Node 腳本）cache() 就是單純直接執行，行為等同沒有快取。
  */
 export const getPool = cache(function getPool() {
-  return new Pool({ connectionString: process.env.DATABASE_URL });
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+  // node-postgres 系列的 Pool 一定要接 error listener：閒置連線被伺服器端斷開
+  // （idle timeout、網路波動）時會在 pool 上非同步發出 error 事件，跟目前
+  // 任何一次查詢都無關；沒人監聽的話 Workers runtime 會把它當成沒接住的例外。
+  // 這個請求早就處理完了，這裡只是把它靜音，不影響任何回應。
+  pool.on("error", (error: Error) => {
+    console.error("Neon pool 發出非同步錯誤（多半是閒置連線被斷開，可忽略）：", error);
+  });
+
+  return pool;
 });
 
 /** better-auth 專用的表結構，只涵蓋 kyselyAdapter 需要管理的 4 張表。 */
