@@ -81,7 +81,12 @@ export function buildPeriodLabel(index: number) {
 
 /** 把一門課的所有「星期＋節次」組合排成一行文字，例如「週一 08:10-09:00、週三 14:10-15:00」。 */
 export function formatSchedule(schedule: Course["schedule"]) {
-  return schedule.map((slot) => `${dayLabel(slot.day)} ${buildPeriodLabel(slot.periodIndex)}`).join("、");
+  return schedule
+    .map((slot) => {
+      const time = slot.periodIndex !== null ? buildPeriodLabel(slot.periodIndex) : `${slot.startTime}-${slot.endTime}`;
+      return `${dayLabel(slot.day)} ${time}`;
+    })
+    .join("、");
 }
 
 /** 把一門課的所有上課日期排成一行文字。 */

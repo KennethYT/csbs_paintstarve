@@ -5,6 +5,7 @@ import { dayLabels, isCourseCategory, periods } from "@/lib/course-constants";
 import type { CourseScheduleSlot, CreateCoursePayload } from "@/lib/types";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 function parseSchedule(value: unknown): CourseScheduleSlot[] | null {
   if (!Array.isArray(value) || value.length === 0) {
@@ -18,18 +19,37 @@ function parseSchedule(value: unknown): CourseScheduleSlot[] | null {
       return null;
     }
 
-    const day = Number((item as Record<string, unknown>).day);
-    const periodIndex = Number((item as Record<string, unknown>).periodIndex);
+    const record = item as Record<string, unknown>;
+    const day = Number(record.day);
 
     if (!Number.isInteger(day) || day < 1 || day > dayLabels.length) {
       return null;
     }
 
-    if (!Number.isInteger(periodIndex) || periodIndex < 0 || periodIndex >= periods.length) {
+    // 選預設節次：periodIndex 有值，startTime/endTime 不能有值
+    if (record.periodIndex !== null && record.periodIndex !== undefined) {
+      const periodIndex = Number(record.periodIndex);
+
+      if (!Number.isInteger(periodIndex) || periodIndex < 0 || periodIndex >= periods.length) {
+        return null;
+      }
+
+      slots.push({ day, periodIndex, startTime: null, endTime: null });
+      continue;
+    }
+
+    // 選自訂時段：periodIndex 是 null，改用 startTime/endTime
+    const { startTime, endTime } = record;
+
+    if (typeof startTime !== "string" || typeof endTime !== "string") {
       return null;
     }
 
-    slots.push({ day, periodIndex });
+    if (!TIME_RE.test(startTime) || !TIME_RE.test(endTime) || startTime >= endTime) {
+      return null;
+    }
+
+    slots.push({ day, periodIndex: null, startTime, endTime });
   }
 
   return slots;

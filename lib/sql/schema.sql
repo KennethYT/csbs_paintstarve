@@ -94,13 +94,21 @@ CREATE INDEX IF NOT EXISTS "Course_teacherId_idx" ON "Course" ("teacherId");
 -- 一門課可以有好幾組「星期＋節次」（例如週一第1節 + 週三第5節）。
 -- 舊版本 Course 表直接放 day / periodIndex 兩個純量欄位，只能存一組，
 -- 下面的 DO 區塊會把舊資料搬過來後再把舊欄位砍掉，冪等可重跑。
+-- periodIndex 對到 lib/course-constants.ts 的 24 個整點時段其中一個；
+-- 選「自訂時段」的話 periodIndex 是 null，改用 startTime/endTime（"HH:MM" 文字）。
+-- 兩者互斥，由 app/api/courses/route.ts 的 parseSchedule 把關，這裡不設 CHECK。
 CREATE TABLE IF NOT EXISTS "CourseSchedule" (
   id TEXT PRIMARY KEY,
   "courseId" TEXT NOT NULL REFERENCES "Course"(id) ON DELETE CASCADE,
   day INTEGER NOT NULL,
-  "periodIndex" INTEGER NOT NULL
+  "periodIndex" INTEGER,
+  "startTime" TEXT,
+  "endTime" TEXT
 );
 CREATE INDEX IF NOT EXISTS "CourseSchedule_courseId_idx" ON "CourseSchedule" ("courseId");
+ALTER TABLE "CourseSchedule" ALTER COLUMN "periodIndex" DROP NOT NULL;
+ALTER TABLE "CourseSchedule" ADD COLUMN IF NOT EXISTS "startTime" TEXT;
+ALTER TABLE "CourseSchedule" ADD COLUMN IF NOT EXISTS "endTime" TEXT;
 
 -- 補欄位要在下面的搬遷 DO 區塊「之前」跑，不然舊資料庫在還沒有 courseDates
 -- 欄位時就會被 UPDATE "Course" SET "courseDates" = ... 那段打到不存在的欄位。

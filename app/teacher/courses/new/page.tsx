@@ -36,7 +36,7 @@ export default function TeacherCreateCoursePage() {
     category: "資訊" as CourseCategory,
     brief: "",
     syllabus: "",
-    schedule: [{ day: 1, periodIndex: 0 }] as CourseScheduleSlot[],
+    schedule: [{ day: 1, periodIndex: 0, startTime: null, endTime: null }] as CourseScheduleSlot[],
     location: "",
     capacity: 30,
     openMode: "now" as OpenMode,
@@ -52,7 +52,10 @@ export default function TeacherCreateCoursePage() {
   };
 
   const addScheduleSlot = () => {
-    setForm((current) => ({ ...current, schedule: [...current.schedule, { day: 1, periodIndex: 0 }] }));
+    setForm((current) => ({
+      ...current,
+      schedule: [...current.schedule, { day: 1, periodIndex: 0, startTime: null, endTime: null }]
+    }));
   };
 
   const removeScheduleSlot = (index: number) => {
@@ -178,15 +181,42 @@ export default function TeacherCreateCoursePage() {
                 </select>
                 <select
                   className="select"
-                  value={slot.periodIndex}
-                  onChange={(event) => updateScheduleSlot(index, { periodIndex: Number(event.target.value) })}
+                  value={slot.periodIndex === null ? "custom" : slot.periodIndex}
+                  onChange={(event) => {
+                    const { value } = event.target;
+
+                    if (value === "custom") {
+                      updateScheduleSlot(index, { periodIndex: null, startTime: "08:00", endTime: "09:00" });
+                    } else {
+                      updateScheduleSlot(index, { periodIndex: Number(value), startTime: null, endTime: null });
+                    }
+                  }}
                 >
                   {periods.map((period, periodIndex) => (
                     <option key={period.label} value={periodIndex}>
                       {period.label}（{period.time}）
                     </option>
                   ))}
+                  <option value="custom">自訂時段…</option>
                 </select>
+                {slot.periodIndex === null ? (
+                  <>
+                    <input
+                      className="input"
+                      type="time"
+                      required
+                      value={slot.startTime ?? ""}
+                      onChange={(event) => updateScheduleSlot(index, { startTime: event.target.value })}
+                    />
+                    <input
+                      className="input"
+                      type="time"
+                      required
+                      value={slot.endTime ?? ""}
+                      onChange={(event) => updateScheduleSlot(index, { endTime: event.target.value })}
+                    />
+                  </>
+                ) : null}
                 <button
                   type="button"
                   className="btn btn-ghost"

@@ -48,7 +48,14 @@ const COURSE_COLUMNS = `
   c.description, c.syllabus, c.capacity, c."openAt", c.hot,
   c."courseDates"::text[] AS "courseDates", c."groupCount", u.name AS "teacherName",
   COALESCE(
-    (SELECT json_agg(json_build_object('day', s.day, 'periodIndex', s."periodIndex") ORDER BY s.day, s."periodIndex")
+    (SELECT json_agg(
+       json_build_object(
+         'day', s.day,
+         'periodIndex', s."periodIndex",
+         'startTime', s."startTime",
+         'endTime', s."endTime"
+       ) ORDER BY s.day, s."periodIndex"
+     )
      FROM "CourseSchedule" s WHERE s."courseId" = c.id),
     '[]'::json
   ) AS schedule
@@ -232,8 +239,9 @@ export async function createCourse(teacherId: string, payload: CreateCoursePaylo
 
     for (const slot of payload.schedule) {
       await client.query(
-        `INSERT INTO "CourseSchedule" (id, "courseId", day, "periodIndex") VALUES ($1,$2,$3,$4)`,
-        [randomUUID(), courseId, slot.day, slot.periodIndex]
+        `INSERT INTO "CourseSchedule" (id, "courseId", day, "periodIndex", "startTime", "endTime")
+         VALUES ($1,$2,$3,$4,$5,$6)`,
+        [randomUUID(), courseId, slot.day, slot.periodIndex, slot.startTime, slot.endTime]
       );
     }
 

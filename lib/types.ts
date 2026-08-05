@@ -15,10 +15,17 @@ export type EnrollmentState =
   | { status: "enrolled" }
   | { status: "waitlist"; position: number };
 
-/** 一組「星期＋節次」。一門課可以有好幾組，例如週一第1節 + 週三第5節。 */
+/**
+ * 一組「星期＋節次」。一門課可以有好幾組，例如週一第1節 + 週三第5節。
+ * periodIndex 有值代表選的是 course-constants.ts 裡的預設節次；
+ * 選「自訂時段」的話 periodIndex 是 null，改用 startTime/endTime（"HH:MM"）。
+ * 兩者互斥，不會同時有值。
+ */
 export type CourseScheduleSlot = {
   day: number;
-  periodIndex: number;
+  periodIndex: number | null;
+  startTime: string | null;
+  endTime: string | null;
 };
 
 /**
