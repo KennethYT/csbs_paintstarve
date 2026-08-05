@@ -27,6 +27,7 @@ type ClassroomContextValue = {
   pendingCourseId: string | null;
   confirmModal: ModalState;
   toast: ToastState;
+  showToast: (message: string) => void;
   refresh: () => Promise<void>;
   grabCourse: (courseId: string) => Promise<void>;
   cancelEnrollment: (courseId: string) => Promise<void>;
@@ -252,6 +253,7 @@ export function ClassroomProvider({
       pendingCourseId,
       confirmModal,
       toast,
+      showToast,
       refresh,
       grabCourse,
       cancelEnrollment,
@@ -268,6 +270,7 @@ export function ClassroomProvider({
       pendingCourseId,
       confirmModal,
       toast,
+      showToast,
       refresh,
       grabCourse,
       cancelEnrollment,

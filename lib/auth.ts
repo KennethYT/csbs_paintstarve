@@ -37,6 +37,12 @@ export const getAuth = cache(function getAuth() {
           // 角色只能由 Discord 身份組解析寫入（見 lib/discord.ts）。
           // 設為 false 可阻止使用者透過 update-user 端點自行把自己改成 teacher。
           input: false
+        },
+        canSwitchRole: {
+          type: "boolean",
+          required: false,
+          // 同上，只能由 lib/discord.ts 寫入，使用者不能自己把這個打開。
+          input: false
         }
       }
     },

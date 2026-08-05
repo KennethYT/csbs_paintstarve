@@ -22,9 +22,12 @@ CREATE TABLE IF NOT EXISTS "user" (
   "emailVerified" BOOLEAN NOT NULL DEFAULT false,
   image TEXT,
   role "Role",
+  -- 同時持有教師與學生兩個 Discord 身份組的人（例如助教），可以自由切換身分
+  "canSwitchRole" BOOLEAN NOT NULL DEFAULT false,
   "createdAt" TIMESTAMPTZ NOT NULL,
   "updatedAt" TIMESTAMPTZ NOT NULL
 );
+ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "canSwitchRole" BOOLEAN NOT NULL DEFAULT false;
 
 CREATE TABLE IF NOT EXISTS account (
   id TEXT PRIMARY KEY,

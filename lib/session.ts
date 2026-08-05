@@ -7,6 +7,10 @@ function toRole(value: unknown): Role | null {
   return value === "student" || value === "teacher" ? value : null;
 }
 
+function toCanSwitchRole(value: unknown): boolean {
+  return value === true;
+}
+
 /**
  * 讀取目前的 session。這是伺服器端的權威來源 —
  * middleware 只是便宜的 cookie 檢查，不能拿來當作授權依據。
@@ -24,7 +28,9 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     return null;
   }
 
-  return { id: session.user.id, name: session.user.name, role };
+  const canSwitchRole = toCanSwitchRole((session.user as { canSwitchRole?: unknown }).canSwitchRole);
+
+  return { id: session.user.id, name: session.user.name, role, canSwitchRole };
 }
 
 /** 在 route handler 內使用，headers 直接由 request 帶入。 */
@@ -41,7 +47,9 @@ export async function getSessionUserFromRequest(request: Request): Promise<Sessi
     return null;
   }
 
-  return { id: session.user.id, name: session.user.name, role };
+  const canSwitchRole = toCanSwitchRole((session.user as { canSwitchRole?: unknown }).canSwitchRole);
+
+  return { id: session.user.id, name: session.user.name, role, canSwitchRole };
 }
 
 /**

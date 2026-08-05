@@ -30,7 +30,7 @@ export async function RoleShell({
       initialEnrollments={snapshot.enrollments}
     >
       <div className="app-shell">
-        <AppHeader role={role} tabs={tabs} userName={user.name} />
+        <AppHeader role={role} tabs={tabs} userName={user.name} canSwitchRole={user.canSwitchRole} />
         <main className="app-container app-main">{children}</main>
       </div>
     </ClassroomProvider>

@@ -98,4 +98,6 @@ export type SessionUser = {
   id: string;
   name: string;
   role: Role;
+  /** 是否同時持有教師與學生兩個 Discord 身份組，可以自由切換身分 */
+  canSwitchRole: boolean;
 };

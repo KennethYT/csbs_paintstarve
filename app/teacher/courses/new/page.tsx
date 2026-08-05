@@ -231,8 +231,6 @@ export default function TeacherCreateCoursePage() {
               }
             >
               <option value="now">立即開放</option>
-              <option value="soon">30 秒後開放（示範倒數）</option>
-              <option value="tomorrow">明日開放</option>
             </select>
           </Field>
         </div>
