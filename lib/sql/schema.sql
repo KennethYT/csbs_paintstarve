@@ -75,25 +75,65 @@ CREATE TABLE IF NOT EXISTS "Course" (
   title TEXT NOT NULL,
   "teacherId" TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
   category TEXT NOT NULL,
-  day INTEGER NOT NULL,
-  "periodIndex" INTEGER NOT NULL,
   location TEXT NOT NULL,
   description TEXT NOT NULL,
   syllabus TEXT[] NOT NULL,
   capacity INTEGER NOT NULL,
   "openAt" TIMESTAMPTZ NOT NULL,
   hot BOOLEAN NOT NULL DEFAULT false,
-  -- 開課日：確切的日曆日期，跟「上課星期」（每週固定星期幾）分開存
-  "courseDate" DATE NOT NULL DEFAULT CURRENT_DATE,
+  -- 上課日期：這門課實際上課的具體日曆日期，可以有好幾個、彼此不需要規律
+  -- （跟「上課星期／節次」是分開的概念，見 CourseSchedule）
+  "courseDates" DATE[] NOT NULL DEFAULT '{}',
   -- 組數：這門課分成幾組上課
   "groupCount" INTEGER NOT NULL DEFAULT 1,
   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT now(),
   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
--- 對已存在的資料庫（在這兩欄加入之前就建過表）補上欄位，讓 db:push 保持冪等可重跑
-ALTER TABLE "Course" ADD COLUMN IF NOT EXISTS "courseDate" DATE NOT NULL DEFAULT CURRENT_DATE;
-ALTER TABLE "Course" ADD COLUMN IF NOT EXISTS "groupCount" INTEGER NOT NULL DEFAULT 1;
 CREATE INDEX IF NOT EXISTS "Course_teacherId_idx" ON "Course" ("teacherId");
+
+-- 一門課可以有好幾組「星期＋節次」（例如週一第1節 + 週三第5節）。
+-- 舊版本 Course 表直接放 day / periodIndex 兩個純量欄位，只能存一組，
+-- 下面的 DO 區塊會把舊資料搬過來後再把舊欄位砍掉，冪等可重跑。
+CREATE TABLE IF NOT EXISTS "CourseSchedule" (
+  id TEXT PRIMARY KEY,
+  "courseId" TEXT NOT NULL REFERENCES "Course"(id) ON DELETE CASCADE,
+  day INTEGER NOT NULL,
+  "periodIndex" INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "CourseSchedule_courseId_idx" ON "CourseSchedule" ("courseId");
+
+-- 補欄位要在下面的搬遷 DO 區塊「之前」跑，不然舊資料庫在還沒有 courseDates
+-- 欄位時就會被 UPDATE "Course" SET "courseDates" = ... 那段打到不存在的欄位。
+ALTER TABLE "Course" ADD COLUMN IF NOT EXISTS "courseDates" DATE[] NOT NULL DEFAULT '{}';
+ALTER TABLE "Course" ADD COLUMN IF NOT EXISTS "groupCount" INTEGER NOT NULL DEFAULT 1;
+
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'Course' AND column_name = 'day'
+  ) THEN
+    INSERT INTO "CourseSchedule" (id, "courseId", day, "periodIndex")
+    SELECT "Course".id || '-migrated', "Course".id, "Course".day, "Course"."periodIndex"
+    FROM "Course"
+    WHERE NOT EXISTS (
+      SELECT 1 FROM "CourseSchedule" WHERE "CourseSchedule"."courseId" = "Course".id
+    );
+
+    ALTER TABLE "Course" DROP COLUMN day;
+    ALTER TABLE "Course" DROP COLUMN "periodIndex";
+  END IF;
+END $$;
+
+-- 舊版本是單一 courseDate（DATE），這裡搬成陣列 courseDates（DATE[]）。
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'Course' AND column_name = 'courseDate'
+  ) THEN
+    UPDATE "Course" SET "courseDates" = ARRAY["courseDate"] WHERE "courseDate" IS NOT NULL;
+    ALTER TABLE "Course" DROP COLUMN "courseDate";
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS "Enrollment" (
   id TEXT PRIMARY KEY,

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { categories, dayLabels, periods } from "@/lib/course-constants";
-import type { CourseCategory, OpenMode } from "@/lib/types";
+import type { CourseCategory, CourseScheduleSlot, OpenMode } from "@/lib/types";
 import { useClassroom } from "@/components/classroom-store";
 import { BackIcon } from "@/components/icons";
 import { MarkdownTextarea } from "@/components/markdown-editor";
@@ -36,14 +36,53 @@ export default function TeacherCreateCoursePage() {
     category: "資訊" as CourseCategory,
     brief: "",
     syllabus: "",
-    day: 1,
-    periodIndex: 0,
+    schedule: [{ day: 1, periodIndex: 0 }] as CourseScheduleSlot[],
     location: "",
     capacity: 30,
     openMode: "now" as OpenMode,
-    courseDate: todayLocalDate(),
+    courseDates: [todayLocalDate()],
     groupCount: 1
   });
+
+  const updateScheduleSlot = (index: number, patch: Partial<CourseScheduleSlot>) => {
+    setForm((current) => ({
+      ...current,
+      schedule: current.schedule.map((slot, slotIndex) => (slotIndex === index ? { ...slot, ...patch } : slot))
+    }));
+  };
+
+  const addScheduleSlot = () => {
+    setForm((current) => ({ ...current, schedule: [...current.schedule, { day: 1, periodIndex: 0 }] }));
+  };
+
+  const removeScheduleSlot = (index: number) => {
+    setForm((current) => ({
+      ...current,
+      schedule:
+        current.schedule.length > 1 ? current.schedule.filter((_, slotIndex) => slotIndex !== index) : current.schedule
+    }));
+  };
+
+  const updateCourseDate = (index: number, value: string) => {
+    setForm((current) => ({
+      ...current,
+      courseDates: current.courseDates.map((date, dateIndex) => (dateIndex === index ? value : date))
+    }));
+  };
+
+  const addCourseDate = () => {
+    setForm((current) => ({ ...current, courseDates: [...current.courseDates, todayLocalDate()] }));
+  };
+
+  const removeCourseDate = (index: number) => {
+    setForm((current) => ({
+      ...current,
+      courseDates:
+        current.courseDates.length > 1
+          ? current.courseDates.filter((_, dateIndex) => dateIndex !== index)
+          : current.courseDates
+    }));
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -59,8 +98,7 @@ export default function TeacherCreateCoursePage() {
     const created = await classroom.createTeacherCourse({
       title: form.title.trim(),
       category: form.category,
-      day: form.day,
-      periodIndex: form.periodIndex,
+      schedule: form.schedule,
       location: form.location.trim() || "教室未定",
       description: form.brief.trim() || "課程簡介尚未提供。",
       syllabus: form.syllabus
@@ -69,7 +107,7 @@ export default function TeacherCreateCoursePage() {
         .filter(Boolean),
       capacity: form.capacity,
       openAt: resolveOpenAt(form.openMode),
-      courseDate: form.courseDate,
+      courseDates: form.courseDates,
       groupCount: form.groupCount
     });
 
@@ -122,6 +160,87 @@ export default function TeacherCreateCoursePage() {
           />
         </Field>
 
+        <Field label="上課星期與節次（可新增多組）" htmlFor="course-schedule-day-0">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {form.schedule.map((slot, index) => (
+              <div key={index} style={{ display: "flex", gap: 8 }}>
+                <select
+                  id={index === 0 ? "course-schedule-day-0" : undefined}
+                  className="select"
+                  value={slot.day}
+                  onChange={(event) => updateScheduleSlot(index, { day: Number(event.target.value) })}
+                >
+                  {dayLabels.map((label, dayIndex) => (
+                    <option key={label} value={dayIndex + 1}>
+                      週{label}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className="select"
+                  value={slot.periodIndex}
+                  onChange={(event) => updateScheduleSlot(index, { periodIndex: Number(event.target.value) })}
+                >
+                  {periods.map((period, periodIndex) => (
+                    <option key={period.label} value={periodIndex}>
+                      {period.label}（{period.time}）
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => removeScheduleSlot(index)}
+                  disabled={form.schedule.length <= 1}
+                >
+                  移除
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={addScheduleSlot}
+              style={{ alignSelf: "flex-start" }}
+            >
+              + 新增星期／節次
+            </button>
+          </div>
+        </Field>
+
+        <Field label="上課日期（可新增多個）" htmlFor="course-date-0">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {form.courseDates.map((date, index) => (
+              <div key={index} style={{ display: "flex", gap: 8 }}>
+                <input
+                  id={index === 0 ? "course-date-0" : undefined}
+                  className="input"
+                  type="date"
+                  required
+                  value={date}
+                  onChange={(event) => updateCourseDate(index, event.target.value)}
+                />
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => removeCourseDate(index)}
+                  disabled={form.courseDates.length <= 1}
+                >
+                  移除
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={addCourseDate}
+              style={{ alignSelf: "flex-start" }}
+            >
+              + 新增日期
+            </button>
+          </div>
+        </Field>
+
         <div className="form-grid">
           <Field label="分類" htmlFor="course-category">
             <select
@@ -150,38 +269,6 @@ export default function TeacherCreateCoursePage() {
             />
           </Field>
 
-          <Field label="上課星期" htmlFor="course-day">
-            <select
-              id="course-day"
-              className="select"
-              value={form.day}
-              onChange={(event) => setForm((current) => ({ ...current, day: Number(event.target.value) }))}
-            >
-              {dayLabels.map((label, index) => (
-                <option key={label} value={index + 1}>
-                  週{label}
-                </option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="上課節次" htmlFor="course-period">
-            <select
-              id="course-period"
-              className="select"
-              value={form.periodIndex}
-              onChange={(event) =>
-                setForm((current) => ({ ...current, periodIndex: Number(event.target.value) }))
-              }
-            >
-              {periods.map((period, index) => (
-                <option key={period.label} value={index}>
-                  {period.label}（{period.time}）
-                </option>
-              ))}
-            </select>
-          </Field>
-
           <Field label="名額" htmlFor="course-capacity">
             <input
               id="course-capacity"
@@ -193,17 +280,6 @@ export default function TeacherCreateCoursePage() {
               onChange={(event) =>
                 setForm((current) => ({ ...current, capacity: Number(event.target.value) || 1 }))
               }
-            />
-          </Field>
-
-          <Field label="開課日期" htmlFor="course-date">
-            <input
-              id="course-date"
-              className="input"
-              type="date"
-              required
-              value={form.courseDate}
-              onChange={(event) => setForm((current) => ({ ...current, courseDate: event.target.value }))}
             />
           </Field>
 
@@ -231,6 +307,8 @@ export default function TeacherCreateCoursePage() {
               }
             >
               <option value="now">立即開放</option>
+              <option value="soon">30 秒後開放（示範倒數）</option>
+              <option value="tomorrow">明日開放</option>
             </select>
           </Field>
         </div>

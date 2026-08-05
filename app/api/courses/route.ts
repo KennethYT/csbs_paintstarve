@@ -2,7 +2,56 @@ import { jsonError, jsonOk, readJson } from "@/lib/api";
 import { getSessionUserFromRequest } from "@/lib/session";
 import { createCourse, getCoursesSnapshot } from "@/lib/course-service";
 import { dayLabels, isCourseCategory, periods } from "@/lib/course-constants";
-import type { CreateCoursePayload } from "@/lib/types";
+import type { CourseScheduleSlot, CreateCoursePayload } from "@/lib/types";
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function parseSchedule(value: unknown): CourseScheduleSlot[] | null {
+  if (!Array.isArray(value) || value.length === 0) {
+    return null;
+  }
+
+  const slots: CourseScheduleSlot[] = [];
+
+  for (const item of value) {
+    if (typeof item !== "object" || item === null) {
+      return null;
+    }
+
+    const day = Number((item as Record<string, unknown>).day);
+    const periodIndex = Number((item as Record<string, unknown>).periodIndex);
+
+    if (!Number.isInteger(day) || day < 1 || day > dayLabels.length) {
+      return null;
+    }
+
+    if (!Number.isInteger(periodIndex) || periodIndex < 0 || periodIndex >= periods.length) {
+      return null;
+    }
+
+    slots.push({ day, periodIndex });
+  }
+
+  return slots;
+}
+
+function parseCourseDates(value: unknown): string[] | null {
+  if (!Array.isArray(value) || value.length === 0) {
+    return null;
+  }
+
+  const dates: string[] = [];
+
+  for (const item of value) {
+    if (typeof item !== "string" || !DATE_RE.test(item)) {
+      return null;
+    }
+
+    dates.push(item);
+  }
+
+  return dates;
+}
 
 export async function GET(request: Request) {
   const user = await getSessionUserFromRequest(request);
@@ -42,16 +91,10 @@ export async function POST(request: Request) {
     return jsonError("課程分類不正確。", 400);
   }
 
-  const day = Number(body.day);
+  const schedule = parseSchedule(body.schedule);
 
-  if (!Number.isInteger(day) || day < 1 || day > dayLabels.length) {
-    return jsonError("上課星期必須是週一到週日。", 400);
-  }
-
-  const periodIndex = Number(body.periodIndex);
-
-  if (!Number.isInteger(periodIndex) || periodIndex < 0 || periodIndex >= periods.length) {
-    return jsonError("上課節次不正確。", 400);
+  if (!schedule) {
+    return jsonError("上課星期／節次不正確，至少要選一組。", 400);
   }
 
   const capacity = Number(body.capacity);
@@ -66,10 +109,10 @@ export async function POST(request: Request) {
     return jsonError("開放時間不正確。", 400);
   }
 
-  const courseDate = typeof body.courseDate === "string" ? body.courseDate : "";
+  const courseDates = parseCourseDates(body.courseDates);
 
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(courseDate)) {
-    return jsonError("開課日期不正確。", 400);
+  if (!courseDates) {
+    return jsonError("上課日期不正確，至少要選一個日期。", 400);
   }
 
   const groupCount = Number(body.groupCount);
@@ -85,11 +128,10 @@ export async function POST(request: Request) {
   const course = await createCourse(user.id, {
     title,
     category: body.category,
-    day,
-    periodIndex,
+    schedule,
     capacity,
     openAt,
-    courseDate,
+    courseDates,
     groupCount,
     location: typeof body.location === "string" && body.location.trim() ? body.location.trim() : "教室未定",
     description:

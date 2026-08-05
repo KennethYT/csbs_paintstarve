@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { categories } from "@/lib/course-constants";
 import {
-  buildPeriodLabel,
-  dayLabel,
+  formatSchedule,
   getButtonLabel,
   getFillPct,
   getStatus,
@@ -85,7 +84,7 @@ export default function StudentBrowsePage() {
                       <span className="badge badge-category">{course.category}</span>
                     </div>
                     <div className="course-card__meta">
-                      {course.teacher} 老師 · {dayLabel(course.day)} {buildPeriodLabel(course.periodIndex)}
+                      {course.teacher} 老師 · {formatSchedule(course.schedule)}
                     </div>
                     <div className="course-card__meta course-card__meta--icon" style={{ marginTop: 2 }}>
                       <LocationIcon aria-hidden="true" />

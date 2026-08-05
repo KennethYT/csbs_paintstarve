@@ -5,6 +5,7 @@ import type {
   Course,
   CourseCategory,
   CourseRoster,
+  CourseScheduleSlot,
   CreateCoursePayload,
   EnrollmentState
 } from "@/lib/types";
@@ -30,23 +31,27 @@ type CourseRow = {
   title: string;
   teacherId: string;
   category: string;
-  day: number;
-  periodIndex: number;
   location: string;
   description: string;
   syllabus: string[];
   capacity: number;
   openAt: Date;
   hot: boolean;
-  courseDate: string;
+  courseDates: string[];
   groupCount: number;
+  schedule: CourseScheduleSlot[];
   teacherName: string;
 };
 
 const COURSE_COLUMNS = `
-  c.id, c.title, c."teacherId", c.category, c.day, c."periodIndex", c.location,
+  c.id, c.title, c."teacherId", c.category, c.location,
   c.description, c.syllabus, c.capacity, c."openAt", c.hot,
-  c."courseDate"::text AS "courseDate", c."groupCount", u.name AS "teacherName"
+  c."courseDates"::text[] AS "courseDates", c."groupCount", u.name AS "teacherName",
+  COALESCE(
+    (SELECT json_agg(json_build_object('day', s.day, 'periodIndex', s."periodIndex") ORDER BY s.day, s."periodIndex")
+     FROM "CourseSchedule" s WHERE s."courseId" = c.id),
+    '[]'::json
+  ) AS schedule
 `;
 
 const COURSE_JOIN_TEACHER = `FROM "Course" c JOIN "user" u ON u.id = c."teacherId"`;
@@ -58,8 +63,7 @@ function toCourse(row: CourseRow, enrolled: number, waitlistCount: number): Cour
     teacher: row.teacherName,
     teacherId: row.teacherId,
     category: row.category as CourseCategory,
-    day: row.day,
-    periodIndex: row.periodIndex,
+    schedule: row.schedule,
     location: row.location,
     description: row.description,
     syllabus: row.syllabus,
@@ -68,7 +72,7 @@ function toCourse(row: CourseRow, enrolled: number, waitlistCount: number): Cour
     waitlistCount,
     openAt: row.openAt.getTime(),
     hot: row.hot,
-    courseDate: row.courseDate,
+    courseDates: row.courseDates,
     groupCount: row.groupCount
   };
 }
@@ -87,9 +91,7 @@ function pgErrorCode(error: unknown): string | undefined {
 export async function getCoursesSnapshot(userId: string): Promise<CoursesSnapshot> {
   const pool = getPool();
   const [rows, counts, mine] = await Promise.all([
-    pool.query<CourseRow>(
-      `SELECT ${COURSE_COLUMNS} ${COURSE_JOIN_TEACHER} ORDER BY c.day ASC, c."periodIndex" ASC, c.title ASC`
-    ),
+    pool.query<CourseRow>(`SELECT ${COURSE_COLUMNS} ${COURSE_JOIN_TEACHER} ORDER BY c.title ASC`),
     pool.query<{ courseId: string; status: "enrolled" | "waitlist"; count: number }>(
       `SELECT "courseId", status, COUNT(*)::int AS count FROM "Enrollment" GROUP BY "courseId", status`
     ),
@@ -206,30 +208,37 @@ export async function getRoster(courseId: string, teacherId: string): Promise<Co
 }
 
 export async function createCourse(teacherId: string, payload: CreateCoursePayload) {
-  const pool = getPool();
-  const { rows } = await pool.query<{ id: string }>(
-    `INSERT INTO "Course"
-       (id, title, "teacherId", category, day, "periodIndex", location, description, syllabus, capacity, "openAt", "courseDate", "groupCount")
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
-     RETURNING id`,
-    [
-      randomUUID(),
-      payload.title,
-      teacherId,
-      payload.category,
-      payload.day,
-      payload.periodIndex,
-      payload.location,
-      payload.description,
-      payload.syllabus,
-      payload.capacity,
-      new Date(payload.openAt),
-      payload.courseDate,
-      payload.groupCount
-    ]
-  );
+  return withTransaction(async (client) => {
+    const courseId = randomUUID();
 
-  return rows[0];
+    await client.query(
+      `INSERT INTO "Course"
+         (id, title, "teacherId", category, location, description, syllabus, capacity, "openAt", "courseDates", "groupCount")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+      [
+        courseId,
+        payload.title,
+        teacherId,
+        payload.category,
+        payload.location,
+        payload.description,
+        payload.syllabus,
+        payload.capacity,
+        new Date(payload.openAt),
+        payload.courseDates,
+        payload.groupCount
+      ]
+    );
+
+    for (const slot of payload.schedule) {
+      await client.query(
+        `INSERT INTO "CourseSchedule" (id, "courseId", day, "periodIndex") VALUES ($1,$2,$3,$4)`,
+        [randomUUID(), courseId, slot.day, slot.periodIndex]
+      );
+    }
+
+    return { id: courseId };
+  });
 }
 
 /**

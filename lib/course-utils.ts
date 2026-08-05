@@ -79,6 +79,16 @@ export function buildPeriodLabel(index: number) {
   return periods[index]?.time ?? "";
 }
 
+/** 把一門課的所有「星期＋節次」組合排成一行文字，例如「週一 08:10-09:00、週三 14:10-15:00」。 */
+export function formatSchedule(schedule: Course["schedule"]) {
+  return schedule.map((slot) => `${dayLabel(slot.day)} ${buildPeriodLabel(slot.periodIndex)}`).join("、");
+}
+
+/** 把一門課的所有上課日期排成一行文字。 */
+export function formatCourseDates(courseDates: string[]) {
+  return courseDates.join("、");
+}
+
 export function getFillPct(enrolled: number, capacity: number) {
   return Math.min(100, Math.round((enrolled / Math.max(capacity, 1)) * 100));
 }
@@ -104,7 +114,8 @@ export function getDayCells(courses: Course[], enrollments: Record<string, Enrol
       return courses
         .filter(
           (candidate) =>
-            candidate.day === day && candidate.periodIndex === periodIndex && enrollments[candidate.id]
+            enrollments[candidate.id] &&
+            candidate.schedule.some((slot) => slot.day === day && slot.periodIndex === periodIndex)
         )
         .map((course) => {
           const enrollment = enrollments[course.id];

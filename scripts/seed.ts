@@ -211,25 +211,28 @@ async function main() {
       rows: [course]
     } = await pool.query<{ id: string }>(
       `INSERT INTO "Course"
-         (id, title, "teacherId", category, day, "periodIndex", location, description, syllabus, capacity, "openAt", hot, "courseDate", "groupCount")
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+         (id, title, "teacherId", category, location, description, syllabus, capacity, "openAt", hot, "courseDates", "groupCount")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
        RETURNING id`,
       [
         randomUUID(),
         seed.title,
         teacherId,
         seed.category,
-        seed.day,
-        seed.periodIndex,
         seed.location,
         seed.description,
         seed.syllabus,
         seed.capacity,
         new Date(now + seed.openAtOffset),
         seed.hot,
-        toLocalDateString(new Date(now + seed.openAtOffset)),
+        [toLocalDateString(new Date(now + seed.openAtOffset))],
         1
       ]
+    );
+
+    await pool.query(
+      `INSERT INTO "CourseSchedule" (id, "courseId", day, "periodIndex") VALUES ($1,$2,$3,$4)`,
+      [randomUUID(), course.id, seed.day, seed.periodIndex]
     );
 
     const rows: Array<{ userId: string; status: EnrollmentStatus; position: number | null }> = [];

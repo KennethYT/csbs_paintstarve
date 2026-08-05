@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { buildPeriodLabel, dayLabel, getFillPct, getStatus } from "@/lib/course-utils";
+import { formatSchedule, getFillPct, getStatus } from "@/lib/course-utils";
 import { useClassroom } from "@/components/classroom-store";
 import { CourseDataBoundary } from "@/components/course-states";
 import { LocationIcon } from "@/components/icons";
@@ -42,9 +42,7 @@ export default function TeacherCoursesPage() {
                   <div style={{ minWidth: 220, flex: 1 }}>
                     <div style={{ fontWeight: 900, fontSize: 15.5 }}>{course.title}</div>
                     <div className="muted course-card__meta--icon" style={{ fontSize: 13, marginTop: 4 }}>
-                      <span>
-                        {dayLabel(course.day)} {buildPeriodLabel(course.periodIndex)} ·
-                      </span>
+                      <span>{formatSchedule(course.schedule)} ·</span>
                       <LocationIcon aria-hidden="true" />
                       {course.location}
                     </div>

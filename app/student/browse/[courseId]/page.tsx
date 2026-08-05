@@ -5,8 +5,8 @@ import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
-  buildPeriodLabel,
-  dayLabel,
+  formatCourseDates,
+  formatSchedule,
   getButtonLabel,
   getFillPct,
   getStatus,
@@ -79,8 +79,8 @@ function CourseDetail({ courseId }: Readonly<{ courseId: string }>) {
         <h1 className="detail-card__title">{course.title}</h1>
         <div className="muted detail-card__meta">
           <span>
-            {course.teacher} 老師 · {dayLabel(course.day)} {buildPeriodLabel(course.periodIndex)} ·
-            開課日 {course.courseDate} · 共 {course.groupCount} 組
+            {course.teacher} 老師 · {formatSchedule(course.schedule)} ·
+            上課日期 {formatCourseDates(course.courseDates)} · 共 {course.groupCount} 組
           </span>
           <span className="detail-card__meta-item">
             <LocationIcon aria-hidden="true" />

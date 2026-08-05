@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { dayLabels } from "@/lib/course-constants";
-import { buildPeriodLabel, dayLabel, getDayCells } from "@/lib/course-utils";
+import { formatSchedule, getDayCells } from "@/lib/course-utils";
 import { useClassroom } from "@/components/classroom-store";
 import { CourseDataBoundary } from "@/components/course-states";
 import { AlertIcon } from "@/components/icons";
@@ -22,15 +22,14 @@ export default function StudentSchedulePage() {
         courseId,
         title: course.title,
         teacher: course.teacher,
-        day: course.day,
-        periodTime: buildPeriodLabel(course.periodIndex),
+        scheduleLabel: formatSchedule(course.schedule),
         status: enrollment.status,
         statusLabel:
           enrollment.status === "enrolled" ? "已確認" : `候補第 ${enrollment.position} 位`
       };
     })
     .filter((item): item is NonNullable<typeof item> => item !== null)
-    .sort((a, b) => a.day - b.day || a.periodTime.localeCompare(b.periodTime));
+    .sort((a, b) => a.title.localeCompare(b.title));
 
   const rows = getDayCells(classroom.courses, classroom.studentEnrollments);
 
@@ -106,7 +105,7 @@ export default function StudentSchedulePage() {
                   <div>
                     <div style={{ fontWeight: 900, fontSize: 14.5 }}>{item.title}</div>
                     <div className="muted" style={{ fontSize: 13, marginTop: 2 }}>
-                      {item.teacher} 老師 · {dayLabel(item.day)} {item.periodTime}
+                      {item.teacher} 老師 · {item.scheduleLabel}
                     </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>

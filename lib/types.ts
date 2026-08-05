@@ -15,6 +15,12 @@ export type EnrollmentState =
   | { status: "enrolled" }
   | { status: "waitlist"; position: number };
 
+/** 一組「星期＋節次」。一門課可以有好幾組，例如週一第1節 + 週三第5節。 */
+export type CourseScheduleSlot = {
+  day: number;
+  periodIndex: number;
+};
+
 /**
  * 送到瀏覽器的課程資料。刻意不含選課學生名單 — 名單只有授課教師能透過
  * GET /api/courses/[courseId]/roster 取得，避免把全校學生姓名送到每個人的瀏覽器。
@@ -25,8 +31,8 @@ export type Course = {
   teacher: string;
   teacherId: string;
   category: CourseCategory;
-  day: number;
-  periodIndex: number;
+  /** 每週固定上課的星期＋節次組合，可以有多組 */
+  schedule: CourseScheduleSlot[];
   location: string;
   description: string;
   syllabus: string[];
@@ -37,8 +43,8 @@ export type Course = {
   /** epoch milliseconds */
   openAt: number;
   hot: boolean;
-  /** 開課日，確切的日曆日期，格式 YYYY-MM-DD */
-  courseDate: string;
+  /** 這門課實際上課的具體日曆日期，可以有多個且不需要規律，格式 YYYY-MM-DD */
+  courseDates: string[];
   /** 這門課分成幾組上課 */
   groupCount: number;
 };
@@ -57,12 +63,11 @@ export type CreateCoursePayload = {
   category: CourseCategory;
   description: string;
   syllabus: string[];
-  day: number;
-  periodIndex: number;
+  schedule: CourseScheduleSlot[];
   location: string;
   capacity: number;
   openAt: number;
-  courseDate: string;
+  courseDates: string[];
   groupCount: number;
 };
 
@@ -71,12 +76,11 @@ export type CreateCourseForm = {
   category: CourseCategory;
   brief: string;
   syllabus: string;
-  day: number;
-  periodIndex: number;
+  schedule: CourseScheduleSlot[];
   location: string;
   capacity: number;
   openMode: OpenMode;
-  courseDate: string;
+  courseDates: string[];
   groupCount: number;
 };
 
