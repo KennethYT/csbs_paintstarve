@@ -143,6 +143,10 @@ DO $$ BEGIN
   END IF;
 END $$;
 
+-- 全站課程只在同一個固定時間開放報名（見 lib/course-constants.ts 的 GLOBAL_OPEN_AT），
+-- 不論新舊課程都一致，所以連既有課程的 openAt 也一併校正成這個時間。
+UPDATE "Course" SET "openAt" = '2026-08-21 20:00:00+08';
+
 CREATE TABLE IF NOT EXISTS "Enrollment" (
   id TEXT PRIMARY KEY,
   status "EnrollmentStatus" NOT NULL,

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { formatSchedule, getFillPct, getStatus } from "@/lib/course-utils";
+import { formatCourseDates, formatSchedule, getFillPct, getStatus } from "@/lib/course-utils";
 import { useClassroom } from "@/components/classroom-store";
 import { CourseDataBoundary } from "@/components/course-states";
 import { DeleteIcon, LocationIcon } from "@/components/icons";
@@ -56,7 +56,10 @@ export default function TeacherCoursesPage() {
                   <div style={{ minWidth: 220, flex: 1 }}>
                     <div style={{ fontWeight: 900, fontSize: 15.5 }}>{course.title}</div>
                     <div className="muted course-card__meta--icon" style={{ fontSize: 13, marginTop: 4 }}>
-                      <span>{formatSchedule(course.schedule)} ·</span>
+                      <span>
+                        {formatSchedule(course.schedule)} · 上課日期 {formatCourseDates(course.courseDates)} · 共{" "}
+                        {course.groupCount} 組 ·
+                      </span>
                       <LocationIcon aria-hidden="true" />
                       {course.location}
                     </div>

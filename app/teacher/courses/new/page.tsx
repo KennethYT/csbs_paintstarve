@@ -3,19 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { categories, dayLabels, periods } from "@/lib/course-constants";
-import type { CourseCategory, CourseScheduleSlot, OpenMode } from "@/lib/types";
+import { GLOBAL_OPEN_AT, GLOBAL_OPEN_AT_LABEL, categories, dayLabels, periods } from "@/lib/course-constants";
+import type { CourseCategory, CourseScheduleSlot } from "@/lib/types";
 import { useClassroom } from "@/components/classroom-store";
 import { BackIcon } from "@/components/icons";
 import { MarkdownTextarea } from "@/components/markdown-editor";
-
-function resolveOpenAt(mode: OpenMode) {
-  const now = Date.now();
-
-  if (mode === "now") return now - 1000;
-  if (mode === "soon") return now + 30_000;
-  return now + 24 * 3600 * 1000;
-}
 
 /** 用本地時間組出 YYYY-MM-DD，避免 toISOString() 轉 UTC 造成日期跑掉一天。 */
 function todayLocalDate() {
@@ -39,7 +31,6 @@ export default function TeacherCreateCoursePage() {
     schedule: [{ day: 1, periodIndex: 0, startTime: null, endTime: null }] as CourseScheduleSlot[],
     location: "",
     capacity: 30,
-    openMode: "now" as OpenMode,
     courseDates: [todayLocalDate()],
     groupCount: 1
   });
@@ -109,7 +100,7 @@ export default function TeacherCreateCoursePage() {
         .map((line) => line.trim())
         .filter(Boolean),
       capacity: form.capacity,
-      openAt: resolveOpenAt(form.openMode),
+      openAt: GLOBAL_OPEN_AT,
       courseDates: form.courseDates,
       groupCount: form.groupCount
     });
@@ -328,18 +319,9 @@ export default function TeacherCreateCoursePage() {
           </Field>
 
           <Field label="報名開放時間" htmlFor="course-open">
-            <select
-              id="course-open"
-              className="select"
-              value={form.openMode}
-              onChange={(event) =>
-                setForm((current) => ({ ...current, openMode: event.target.value as OpenMode }))
-              }
-            >
-              <option value="now">立即開放</option>
-              <option value="soon">30 秒後開放（示範倒數）</option>
-              <option value="tomorrow">明日開放</option>
-            </select>
+            <div id="course-open" className="input" style={{ color: "var(--muted)", cursor: "default" }}>
+              {GLOBAL_OPEN_AT_LABEL}（全站課程統一開放，無法個別設定）
+            </div>
           </Field>
         </div>
 

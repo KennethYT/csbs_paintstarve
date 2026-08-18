@@ -1,4 +1,4 @@
-import { dayLabels, isCourseCategory, periods } from "@/lib/course-constants";
+import { GLOBAL_OPEN_AT, dayLabels, isCourseCategory, periods } from "@/lib/course-constants";
 import type { CourseScheduleSlot, CreateCoursePayload } from "@/lib/types";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -104,12 +104,6 @@ export function parseCoursePayload(body: Partial<CreateCoursePayload> | null): C
     return { error: "名額必須介於 1 到 500 之間。" };
   }
 
-  const openAt = Number(body.openAt);
-
-  if (!Number.isFinite(openAt)) {
-    return { error: "開放時間不正確。" };
-  }
-
   const courseDates = parseCourseDates(body.courseDates);
 
   if (!courseDates) {
@@ -131,7 +125,8 @@ export function parseCoursePayload(body: Partial<CreateCoursePayload> | null): C
     category: body.category,
     schedule,
     capacity,
-    openAt,
+    // 全站課程只在同一個固定時間開放報名，不接受個別設定，見 GLOBAL_OPEN_AT。
+    openAt: GLOBAL_OPEN_AT,
     courseDates,
     groupCount,
     location: typeof body.location === "string" && body.location.trim() ? body.location.trim() : "教室未定",

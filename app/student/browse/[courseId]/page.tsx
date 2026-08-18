@@ -78,14 +78,14 @@ function CourseDetail({ courseId }: Readonly<{ courseId: string }>) {
         ) : null}
         <h1 className="detail-card__title">{course.title}</h1>
         <div className="muted detail-card__meta">
-          <span>
-            {course.teacher} 老師 · {formatSchedule(course.schedule)} ·
-            上課日期 {formatCourseDates(course.courseDates)} · 共 {course.groupCount} 組
-          </span>
-          <span className="detail-card__meta-item">
+          <div>{course.teacher} 老師</div>
+          <div>{formatSchedule(course.schedule)}</div>
+          <div>上課日期: {formatCourseDates(course.courseDates)}</div>
+          <div className="detail-card__meta-item">
             <LocationIcon aria-hidden="true" />
             {course.location}
-          </span>
+          </div>
+          <div>共 {course.groupCount} 組</div>
         </div>
       </div>
 

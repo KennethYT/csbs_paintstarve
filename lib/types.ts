@@ -9,8 +9,6 @@ export type CourseCategory =
   | "社會科學"
   | "其他";
 
-export type OpenMode = "now" | "soon" | "tomorrow";
-
 export type EnrollmentState =
   | { status: "enrolled" }
   | { status: "waitlist"; position: number };
@@ -74,19 +72,6 @@ export type CreateCoursePayload = {
   location: string;
   capacity: number;
   openAt: number;
-  courseDates: string[];
-  groupCount: number;
-};
-
-export type CreateCourseForm = {
-  title: string;
-  category: CourseCategory;
-  brief: string;
-  syllabus: string;
-  schedule: CourseScheduleSlot[];
-  location: string;
-  capacity: number;
-  openMode: OpenMode;
   courseDates: string[];
   groupCount: number;
 };

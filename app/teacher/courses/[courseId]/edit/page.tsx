@@ -3,22 +3,20 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { categories, dayLabels, periods } from "@/lib/course-constants";
+import { GLOBAL_OPEN_AT, GLOBAL_OPEN_AT_LABEL, categories, dayLabels, periods } from "@/lib/course-constants";
 import type { Course, CourseScheduleSlot } from "@/lib/types";
 import { useClassroom } from "@/components/classroom-store";
 import { CourseDataBoundary } from "@/components/course-states";
 import { BackIcon } from "@/components/icons";
 import { MarkdownTextarea } from "@/components/markdown-editor";
 
-/** 用本地時間組出 datetime-local 需要的 "YYYY-MM-DDTHH:mm"，避免時區轉換造成時間跑掉。 */
-function toLocalDatetimeInput(epochMs: number) {
-  const date = new Date(epochMs);
-  const pad = (value: number) => String(value).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
-
+/** 用本地時間組出 YYYY-MM-DD，避免 toISOString() 轉 UTC 造成日期跑掉一天。 */
 function todayLocalDate() {
-  return toLocalDatetimeInput(Date.now()).slice(0, 10);
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 export default function TeacherEditCoursePage() {
@@ -64,7 +62,6 @@ function EditCourseForm({ course }: Readonly<{ course: Course }>) {
     schedule: course.schedule as CourseScheduleSlot[],
     location: course.location,
     capacity: course.capacity,
-    openAtLocal: toLocalDatetimeInput(course.openAt),
     courseDates: course.courseDates,
     groupCount: course.groupCount
   }));
@@ -121,13 +118,6 @@ function EditCourseForm({ course }: Readonly<{ course: Course }>) {
       return;
     }
 
-    const openAt = new Date(form.openAtLocal).getTime();
-
-    if (!Number.isFinite(openAt)) {
-      setError("開放時間不正確。");
-      return;
-    }
-
     setIsSubmitting(true);
 
     const updated = await classroom.updateTeacherCourse(course.id, {
@@ -141,7 +131,7 @@ function EditCourseForm({ course }: Readonly<{ course: Course }>) {
         .map((line) => line.trim())
         .filter(Boolean),
       capacity: form.capacity,
-      openAt,
+      openAt: GLOBAL_OPEN_AT,
       courseDates: form.courseDates,
       groupCount: form.groupCount
     });
@@ -335,14 +325,9 @@ function EditCourseForm({ course }: Readonly<{ course: Course }>) {
         </Field>
 
         <Field label="報名開放時間" htmlFor="course-open-at">
-          <input
-            id="course-open-at"
-            className="input"
-            type="datetime-local"
-            required
-            value={form.openAtLocal}
-            onChange={(event) => setForm((current) => ({ ...current, openAtLocal: event.target.value }))}
-          />
+          <div id="course-open-at" className="input" style={{ color: "var(--muted)", cursor: "default" }}>
+            {GLOBAL_OPEN_AT_LABEL}（全站課程統一開放，無法個別設定）
+          </div>
         </Field>
       </div>
 

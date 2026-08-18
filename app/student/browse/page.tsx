@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { categories } from "@/lib/course-constants";
 import {
+  formatCourseDates,
   formatSchedule,
   getButtonLabel,
   getFillPct,
@@ -85,7 +86,8 @@ export default function StudentBrowsePage() {
                     </div>
                     <div className="course-card__meta">{course.teacher} 老師</div>
                     <div className="course-card__meta course-card__desc">{course.description}</div>
-                    <div className="course-card__meta">{formatSchedule(course.schedule)}</div>
+                    <div className="course-card__meta">上課日期: {formatCourseDates(course.courseDates)}</div>
+                    <div className="course-card__meta">共 {course.groupCount} 組</div>
                     <div className="course-card__meta course-card__meta--icon" style={{ marginTop: 2 }}>
                       <LocationIcon aria-hidden="true" />
                       {course.location}

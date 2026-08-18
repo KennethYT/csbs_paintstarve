@@ -22,3 +22,11 @@ export const periods: Period[] = Array.from({ length: 24 }, (_, hour) => {
 export function isCourseCategory(value: unknown): value is CourseCategory {
   return typeof value === "string" && categories.includes(value as CourseCategory);
 }
+
+/**
+ * 全站統一開搶時間：不論新舊課程，一律只在這個時間點開放報名，
+ * 教師端無法個別設定。以固定字串組出時間，避免 Date 依伺服器／瀏覽器
+ * 時區換算 getHours() 等造成 SSR 與 CSR 顯示不一致。
+ */
+export const GLOBAL_OPEN_AT = new Date("2026-08-21T20:00:00+08:00").getTime();
+export const GLOBAL_OPEN_AT_LABEL = "2026/08/21 20:00";

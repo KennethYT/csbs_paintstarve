@@ -937,11 +937,11 @@ a {
 
 .detail-card__meta {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   font-size: 14px;
-  line-height: 1.7;
+  line-height: 1.5;
   margin-top: 8px;
 }
 
