@@ -249,6 +249,75 @@ export async function createCourse(teacherId: string, payload: CreateCoursePaylo
   });
 }
 
+/** 只有授課教師能修改自己的課程；找不到課程或不是本人開的都視為錯誤。 */
+export async function updateCourse(courseId: string, teacherId: string, payload: CreateCoursePayload) {
+  return withTransaction(async (client) => {
+    const { rows } = await client.query<{ teacherId: string }>(
+      `SELECT "teacherId" FROM "Course" WHERE id = $1`,
+      [courseId]
+    );
+    const course = rows[0];
+
+    if (!course) {
+      throw new CourseError("找不到這門課程。", 404);
+    }
+
+    if (course.teacherId !== teacherId) {
+      throw new CourseError("只有授課教師可以修改課程。", 403);
+    }
+
+    await client.query(
+      `UPDATE "Course"
+       SET title = $2, category = $3, location = $4, description = $5, syllabus = $6,
+           capacity = $7, "openAt" = $8, "courseDates" = $9, "groupCount" = $10, "updatedAt" = now()
+       WHERE id = $1`,
+      [
+        courseId,
+        payload.title,
+        payload.category,
+        payload.location,
+        payload.description,
+        payload.syllabus,
+        payload.capacity,
+        new Date(payload.openAt),
+        payload.courseDates,
+        payload.groupCount
+      ]
+    );
+
+    await client.query(`DELETE FROM "CourseSchedule" WHERE "courseId" = $1`, [courseId]);
+
+    for (const slot of payload.schedule) {
+      await client.query(
+        `INSERT INTO "CourseSchedule" (id, "courseId", day, "periodIndex", "startTime", "endTime")
+         VALUES ($1,$2,$3,$4,$5,$6)`,
+        [randomUUID(), courseId, slot.day, slot.periodIndex, slot.startTime, slot.endTime]
+      );
+    }
+  });
+}
+
+/** 只有授課教師能刪除自己的課程；用一次 DELETE 判斷所有權，避免先查後刪的競態。 */
+export async function deleteCourse(courseId: string, teacherId: string) {
+  const pool = getPool();
+  const { rows } = await pool.query<{ id: string }>(
+    `DELETE FROM "Course" WHERE id = $1 AND "teacherId" = $2 RETURNING id`,
+    [courseId, teacherId]
+  );
+
+  if (rows.length > 0) {
+    return;
+  }
+
+  const { rows: existing } = await pool.query<{ id: string }>(`SELECT id FROM "Course" WHERE id = $1`, [courseId]);
+
+  if (!existing[0]) {
+    throw new CourseError("找不到這門課程。", 404);
+  }
+
+  throw new CourseError("只有授課教師可以刪除課程。", 403);
+}
+
 /**
  * 對同一堂課取得交易層級的 advisory lock，讓針對這門課的搶課／退選請求排隊處理。
  *

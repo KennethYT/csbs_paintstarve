@@ -32,7 +32,8 @@ export {
   FiLink as LinkIcon,
   FiList as ListIcon,
   FiMapPin as LocationIcon,
-  FiTrash2 as RemovedIcon
+  FiTrash2 as RemovedIcon,
+  FiTrash2 as DeleteIcon
 };
 
 export function ModalIconGraphic({ icon }: Readonly<{ icon: ModalIconKind }>) {

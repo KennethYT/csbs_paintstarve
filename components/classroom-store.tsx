@@ -32,6 +32,8 @@ type ClassroomContextValue = {
   grabCourse: (courseId: string) => Promise<void>;
   cancelEnrollment: (courseId: string) => Promise<void>;
   createTeacherCourse: (payload: CreateCoursePayload) => Promise<boolean>;
+  updateTeacherCourse: (courseId: string, payload: CreateCoursePayload) => Promise<boolean>;
+  deleteTeacherCourse: (courseId: string) => Promise<boolean>;
   dismissConfirmModal: () => void;
 };
 
@@ -240,6 +242,54 @@ export function ClassroomProvider({
     [refresh, showToast]
   );
 
+  const updateTeacherCourse = useCallback(
+    async (courseId: string, payload: CreateCoursePayload) => {
+      try {
+        const response = await fetch(`/api/courses/${encodeURIComponent(courseId)}`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const result = (await response.json()) as { ok: boolean; message?: string };
+
+        if (!response.ok || !result.ok) {
+          showToast(result.message ?? "更新課程失敗。");
+          return false;
+        }
+
+        await refresh();
+        showToast("課程已更新");
+        return true;
+      } catch {
+        showToast("更新課程失敗，請檢查網路後再試。");
+        return false;
+      }
+    },
+    [refresh, showToast]
+  );
+
+  const deleteTeacherCourse = useCallback(
+    async (courseId: string) => {
+      try {
+        const response = await fetch(`/api/courses/${encodeURIComponent(courseId)}`, { method: "DELETE" });
+        const result = (await response.json()) as { ok: boolean; message?: string };
+
+        if (!response.ok || !result.ok) {
+          showToast(result.message ?? "刪除課程失敗。");
+          return false;
+        }
+
+        await refresh();
+        showToast("課程已刪除");
+        return true;
+      } catch {
+        showToast("刪除課程失敗，請檢查網路後再試。");
+        return false;
+      }
+    },
+    [refresh, showToast]
+  );
+
   const dismissConfirmModal = useCallback(() => setConfirmModal(null), []);
 
   const value = useMemo<ClassroomContextValue>(
@@ -258,6 +308,8 @@ export function ClassroomProvider({
       grabCourse,
       cancelEnrollment,
       createTeacherCourse,
+      updateTeacherCourse,
+      deleteTeacherCourse,
       dismissConfirmModal
     }),
     [
@@ -275,6 +327,8 @@ export function ClassroomProvider({
       grabCourse,
       cancelEnrollment,
       createTeacherCourse,
+      updateTeacherCourse,
+      deleteTeacherCourse,
       dismissConfirmModal
     ]
   );

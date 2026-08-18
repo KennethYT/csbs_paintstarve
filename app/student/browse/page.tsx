@@ -83,9 +83,9 @@ export default function StudentBrowsePage() {
                       <div className="course-card__title">{course.title}</div>
                       <span className="badge badge-category">{course.category}</span>
                     </div>
-                    <div className="course-card__meta">
-                      {course.teacher} 老師 · {formatSchedule(course.schedule)}
-                    </div>
+                    <div className="course-card__meta">{course.teacher} 老師</div>
+                    <div className="course-card__meta course-card__desc">{course.description}</div>
+                    <div className="course-card__meta">{formatSchedule(course.schedule)}</div>
                     <div className="course-card__meta course-card__meta--icon" style={{ marginTop: 2 }}>
                       <LocationIcon aria-hidden="true" />
                       {course.location}

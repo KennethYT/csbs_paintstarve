@@ -444,6 +444,22 @@ a {
   background: var(--panel-raised);
 }
 
+/* 刪除課程用的圖示按鈕，用警示色跟其他 ghost 按鈕區分開來。 */
+.btn-icon-danger {
+  border: 1px solid var(--border-strong);
+  background: #171717;
+  color: var(--danger);
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.btn-icon-danger:hover {
+  background: rgba(248, 113, 113, 0.14);
+  border-color: var(--danger);
+}
+
 .btn-link {
   background: transparent;
   color: var(--muted);
@@ -620,6 +636,14 @@ a {
   color: var(--muted);
   font-size: 13px;
   margin-top: 6px;
+}
+
+/* 課程簡介預覽：最多兩行，避免長簡介把卡片撐高。 */
+.course-card__desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* 帶圖示的那一行：讓地點圖示與文字對齊，窄螢幕時可換行。 */

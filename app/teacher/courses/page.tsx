@@ -1,15 +1,29 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { formatSchedule, getFillPct, getStatus } from "@/lib/course-utils";
 import { useClassroom } from "@/components/classroom-store";
 import { CourseDataBoundary } from "@/components/course-states";
-import { LocationIcon } from "@/components/icons";
+import { DeleteIcon, LocationIcon } from "@/components/icons";
 
 export default function TeacherCoursesPage() {
   const classroom = useClassroom();
+  const [deletingCourseId, setDeletingCourseId] = useState<string | null>(null);
   // 以 teacherId 比對，而非姓名 —— 同名老師不會互相看到對方的課
   const teacherCourses = classroom.courses.filter((course) => course.teacherId === classroom.user.id);
+
+  const handleDelete = async (courseId: string, title: string) => {
+    const confirmed = window.confirm(`確定要刪除課程「${title}」嗎？此操作無法復原，已選課與候補的學生也會一併移除。`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingCourseId(courseId);
+    await classroom.deleteTeacherCourse(courseId);
+    setDeletingCourseId(null);
+  };
 
   return (
     <section>
@@ -68,9 +82,23 @@ export default function TeacherCoursesPage() {
                     {status.label}
                   </span>
 
+                  <Link className="btn btn-ghost" href={`/teacher/courses/${course.id}/edit`}>
+                    編輯課程
+                  </Link>
+
                   <Link className="btn btn-ghost" href={`/teacher/courses/${course.id}/roster`}>
                     查看名單
                   </Link>
+
+                  <button
+                    type="button"
+                    className="btn btn-icon-danger"
+                    aria-label={`刪除課程「${course.title}」`}
+                    disabled={deletingCourseId === course.id}
+                    onClick={() => void handleDelete(course.id, course.title)}
+                  >
+                    <DeleteIcon aria-hidden="true" />
+                  </button>
                 </div>
               );
             })}
