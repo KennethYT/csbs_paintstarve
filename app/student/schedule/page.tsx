@@ -55,7 +55,7 @@ export default function StudentSchedulePage() {
             <Link href="/student/browse" style={{ color: "var(--subtitle)", fontWeight: 900 }}>
               課程列表
             </Link>{" "}
-            開始搶課吧！
+            開始報名吧！
           </div>
         ) : (
           <>

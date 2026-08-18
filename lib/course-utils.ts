@@ -48,7 +48,7 @@ export function getStatus(course: Course, now: number, enrollment?: EnrollmentSt
   }
 
   if (course.enrolled < course.capacity) {
-    return { phase: "open", label: "搶課中" };
+    return { phase: "open", label: "報名中" };
   }
 
   return { phase: "full", label: "已額滿" };
@@ -56,7 +56,7 @@ export function getStatus(course: Course, now: number, enrollment?: EnrollmentSt
 
 export function getButtonLabel(phase: StatusPhase) {
   if (phase === "upcoming") return "尚未開放";
-  if (phase === "open") return "搶課";
+  if (phase === "open") return "報名";
   if (phase === "full") return "加入候補";
   if (phase === "my-enrolled") return "取消選課";
   return "取消候補";

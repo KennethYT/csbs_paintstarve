@@ -2,7 +2,7 @@ import { jsonError, jsonOk } from "@/lib/api";
 import { getSessionUserFromRequest } from "@/lib/session";
 import { CourseError, cancelEnrollment, grabCourse } from "@/lib/course-service";
 
-/** 搶課／加入候補 */
+/** 報名／加入候補 */
 export async function POST(request: Request, context: { params: Promise<{ courseId: string }> }) {
   const user = await getSessionUserFromRequest(request);
 
@@ -25,7 +25,7 @@ export async function POST(request: Request, context: { params: Promise<{ course
     }
 
     console.error("grab course failed", error);
-    return jsonError("搶課失敗，請稍後再試。", 500);
+    return jsonError("報名失敗，請稍後再試。", 500);
   }
 }
 

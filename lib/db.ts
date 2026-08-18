@@ -6,7 +6,7 @@ import { cache } from "react";
  * Cloudflare Workers 沒有 TCP socket，所以連線走 Neon 的 serverless driver。
  *
  * 這裡刻意用 `Pool`（WebSocket 模式）而不是 `neon()`（HTTP 模式）：
- * HTTP 模式不支援 interactive transaction，而 lib/course-service.ts 的搶課邏輯
+ * HTTP 模式不支援 interactive transaction，而 lib/course-service.ts 的報名邏輯
  * 依賴 `pg_advisory_xact_lock` 搭配交易中的多個指令來保證不超賣。
  * WebSocket 模式給的是完整的 pg 連線語意（session state、advisory lock、
  * BEGIN/COMMIT），是唯一能原封不動保留那套併發設計的選項。

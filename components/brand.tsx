@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-export const BRAND_NAME = "選課搶課系統";
+export const BRAND_NAME = "選課報名系統";
 export const BRAND_LOGO_SRC = "/school_logo-d04_6Mii.png";
 
 export function BrandLogo({ size = 36, priority = false, className }: Readonly<{ size?: number; priority?: boolean; className?: string }>) {

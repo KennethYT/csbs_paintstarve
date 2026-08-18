@@ -334,7 +334,7 @@ function EditCourseForm({ course }: Readonly<{ course: Course }>) {
           />
         </Field>
 
-        <Field label="搶課開放時間" htmlFor="course-open-at">
+        <Field label="報名開放時間" htmlFor="course-open-at">
           <input
             id="course-open-at"
             className="input"

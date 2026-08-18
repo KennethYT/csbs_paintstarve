@@ -147,7 +147,7 @@ export function ClassroomProvider({
         const payload = (await response.json()) as ActionResponse;
 
         if (!response.ok || !payload.ok) {
-          showToast(payload.message ?? "搶課失敗，請稍後再試。");
+          showToast(payload.message ?? "報名失敗，請稍後再試。");
           await refresh();
           return;
         }
@@ -163,14 +163,14 @@ export function ClassroomProvider({
         } else {
           setConfirmModal({
             icon: "success",
-            title: "搶課成功",
+            title: "報名成功",
             body: `已為你保留「${course?.title ?? "課程"}」的座位，可至「我的課表」查看。`
           });
         }
 
         await refresh();
       } catch {
-        showToast("搶課失敗，請檢查網路後再試。");
+        showToast("報名失敗，請檢查網路後再試。");
       } finally {
         setPendingCourseId(null);
       }
@@ -203,7 +203,7 @@ export function ClassroomProvider({
           title: wasWaitlist ? "已取消候補" : "已取消選課",
           body: wasWaitlist
             ? `已取消「${course?.title ?? "課程"}」的候補資格。`
-            : `已取消「${course?.title ?? "課程"}」選課，你可以重新搶課或改選其他課程。`
+            : `已取消「${course?.title ?? "課程"}」選課，你可以重新報名或改選其他課程。`
         });
 
         await refresh();

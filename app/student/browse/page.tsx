@@ -36,7 +36,7 @@ export default function StudentBrowsePage() {
       <div className="page-head">
         <div>
           <h1 className="section-title">課程列表</h1>
-          <div className="page-head__subtitle">開搶瞬間名額即時變動，把握時機搶課</div>
+          <div className="page-head__subtitle">開搶瞬間名額即時變動，把握時機報名</div>
         </div>
         <input
           className="input search-input"

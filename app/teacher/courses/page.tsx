@@ -30,7 +30,7 @@ export default function TeacherCoursesPage() {
       <div className="page-head">
         <div>
           <h1 className="section-title">我的課程</h1>
-          <div className="page-head__subtitle">管理你開設的課程與搶課狀態</div>
+          <div className="page-head__subtitle">管理你開設的課程與報名狀態</div>
         </div>
         <Link className="btn btn-brand" href="/teacher/courses/new" style={{ padding: "11px 18px", fontWeight: 900 }}>
           + 建立新課程

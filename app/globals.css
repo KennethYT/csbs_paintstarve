@@ -8,7 +8,7 @@
   --border-strong: #3a3a3a;
   --text: #f2f2f2;
   --subtitle: #f5bf1d;
-  --muted: #a3a3a3;
+  --muted: #979292;
   --brand: #d6d6d6;
   --success: #6ee7b7;
   --warning: #facc15;
@@ -18,10 +18,10 @@
   /* 課程狀態色票。原本這些顏色是淺色主題的深色調（#15803D / #1D4ED8 / #B91C1C），
      直接寫在 inline style 裡，放到 #121212 背景上幾乎看不見。
      以下都以深色底為前提挑選，對比度達 WCAG AA。 */
-  --status-upcoming: #9ca3af;
+  --status-upcoming: #5d6d8a;
   --status-upcoming-bg: #232323;
-  --status-open: #93c5fd;
-  --status-open-bg: #16304f;
+  --status-open: #83abda;
+  --status-open-bg: #06182e;
   --status-full: #fca5a5;
   --status-full-bg: #3d1b1b;
   --status-enrolled: #6ee7b7;
@@ -612,6 +612,7 @@ a {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  
 }
 
 .course-card__link {
@@ -628,8 +629,9 @@ a {
 
 .course-card__title {
   font-weight: 900;
-  font-size: 16px;
+  font-size: 20px;
   line-height: 1.35;
+  color: var(--subtitle);
 }
 
 .course-card__meta {
@@ -644,6 +646,9 @@ a {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
 }
 
 /* 帶圖示的那一行：讓地點圖示與文字對齊，窄螢幕時可換行。 */

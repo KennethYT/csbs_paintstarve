@@ -327,7 +327,7 @@ export default function TeacherCreateCoursePage() {
             />
           </Field>
 
-          <Field label="搶課開放時間" htmlFor="course-open">
+          <Field label="報名開放時間" htmlFor="course-open">
             <select
               id="course-open"
               className="select"

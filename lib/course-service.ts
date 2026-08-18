@@ -319,7 +319,7 @@ export async function deleteCourse(courseId: string, teacherId: string) {
 }
 
 /**
- * 對同一堂課取得交易層級的 advisory lock，讓針對這門課的搶課／退選請求排隊處理。
+ * 對同一堂課取得交易層級的 advisory lock，讓針對這門課的報名／退選請求排隊處理。
  *
  * 為什麼不用 Serializable 隔離等級：那個做法下，N 個人同時搶同一堂課會讓 Postgres
  * 中止其中大部分交易（serialization_failure），必須靠重試補救；實測 20 人搶 5 個名額時，
@@ -399,7 +399,7 @@ export async function grabCourse(courseId: string, userId: string): Promise<Grab
       }
 
       if (Date.now() < course.openAt.getTime()) {
-        throw new CourseError("這門課還沒開放搶課。", 409);
+        throw new CourseError("這門課還沒開放報名。", 409);
       }
 
       const { rows: existingRows } = await client.query<{ id: string }>(
@@ -442,7 +442,7 @@ export async function grabCourse(courseId: string, userId: string): Promise<Grab
       return { status: "waitlist", position } as const;
     })
   ).catch((error) => {
-    // @@unique([courseId, userId]) 擋下併發的重複搶課
+    // @@unique([courseId, userId]) 擋下併發的重複報名
     if (pgErrorCode(error) === "23505") {
       throw new CourseError("你已經選過或候補這門課了。", 409);
     }
@@ -461,7 +461,7 @@ export type CancelResult = {
 export async function cancelEnrollment(courseId: string, userId: string): Promise<CancelResult> {
   return withRetry(() =>
     withTransaction(async (client) => {
-      // 與搶課共用同一把鎖，遞補期間不會有人搶走剛空出來的位子
+      // 與報名共用同一把鎖，遞補期間不會有人搶走剛空出來的位子
       await lockCourse(client, courseId);
 
       const { rows: enrollmentRows } = await client.query<{

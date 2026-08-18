@@ -9,8 +9,8 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "選課搶課系統",
-  description: "Next.js 16 版的選課搶課系統"
+  title: "選課報名系統",
+  description: "Next.js 16 版的選課報名系統"
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

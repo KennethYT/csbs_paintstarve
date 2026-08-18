@@ -1,6 +1,6 @@
-# 選課搶課系統
+# 選課報名系統
 
-大學選課／搶課系統。學生在開放時間瞬間搶有限名額、額滿自動排候補；教師開課、管理名單、看儀表板。
+大學選課／報名系統。學生在開放時間瞬間搶有限名額、額滿自動排候補；教師開課、管理名單、看儀表板。
 
 以 **Next.js 16（App Router）+ React 19 + TypeScript + PostgreSQL（Neon，原生 SQL）** 打造，登入使用 **better-auth**，身分一律由 Discord 伺服器的身份組自動辨識。
 
@@ -8,7 +8,7 @@
 
 **學生**
 - 瀏覽課程，可依名稱／教師搜尋、依分類篩選
-- 搶課；額滿時自動加入候補並顯示排序
+- 報名；額滿時自動加入候補並顯示排序
 - 我的課表：週課表格線 + 已選清單，可退選／取消候補
 - 名額變動每 4 秒自動更新，開搶倒數即時計時
 
@@ -72,7 +72,7 @@ app/
   api/
     auth/[...all]/              better-auth
     courses/                    課程列表／建立
-    courses/[courseId]/enroll/  搶課（POST）與退選（DELETE）
+    courses/[courseId]/enroll/  報名（POST）與退選（DELETE）
     courses/[courseId]/roster/  選課名單（僅授課教師）
 lib/
   auth.ts  session.ts           認證設定與伺服器端 session helper
@@ -85,7 +85,7 @@ components/
 proxy.ts                        edge 層的 cookie 檢查（非授權依據）
 ```
 
-### 搶課的併發正確性
+### 報名的併發正確性
 
 開搶瞬間會有大量請求同時打同一堂課，必須保證**不超賣**。作法是在交易一開始對該課程取得
 Postgres 的 transaction-level advisory lock：
@@ -132,7 +132,7 @@ await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [cou
 
 ### 資料庫必須是 Neon，而且要用 direct endpoint
 
-這不是偏好問題，是被搶課邏輯逼出來的結論。`lib/course-service.ts` 用
+這不是偏好問題，是被報名邏輯逼出來的結論。`lib/course-service.ts` 用
 `pg_advisory_xact_lock` 搭配 interactive transaction 保證不超賣，而在 Workers 上：
 
 - **Cloudflare Hyperdrive 不支援 advisory lock**，而且它是 transaction-mode pooler，
