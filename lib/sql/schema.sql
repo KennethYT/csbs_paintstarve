@@ -147,6 +147,10 @@ END $$;
 -- 不論新舊課程都一致，所以連既有課程的 openAt 也一併校正成這個時間。
 UPDATE "Course" SET "openAt" = '2026-08-21 20:00:00+08';
 
+-- 全站課程統一限額 20 人（見 lib/course-constants.ts 的 GLOBAL_CAPACITY），
+-- 不論新舊課程都一致，所以連既有課程的 capacity 也一併校正成這個上限。
+UPDATE "Course" SET capacity = 20;
+
 CREATE TABLE IF NOT EXISTS "Enrollment" (
   id TEXT PRIMARY KEY,
   status "EnrollmentStatus" NOT NULL,

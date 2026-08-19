@@ -30,3 +30,6 @@ export function isCourseCategory(value: unknown): value is CourseCategory {
  */
 export const GLOBAL_OPEN_AT = new Date("2026-08-21T20:00:00+08:00").getTime();
 export const GLOBAL_OPEN_AT_LABEL = "2026/08/21 20:00";
+
+/** 全站課程統一限額 20 人，不論新舊課程，教師端無法個別設定。 */
+export const GLOBAL_CAPACITY = 20;

@@ -5,7 +5,6 @@ import { useMemo, useState } from "react";
 import { categories } from "@/lib/course-constants";
 import {
   formatCourseDates,
-  formatSchedule,
   getButtonLabel,
   getFillPct,
   getStatus,

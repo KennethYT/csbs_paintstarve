@@ -1,4 +1,4 @@
-import { GLOBAL_OPEN_AT, dayLabels, isCourseCategory, periods } from "@/lib/course-constants";
+import { GLOBAL_CAPACITY, GLOBAL_OPEN_AT, dayLabels, isCourseCategory, periods } from "@/lib/course-constants";
 import type { CourseScheduleSlot, CreateCoursePayload } from "@/lib/types";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -98,12 +98,6 @@ export function parseCoursePayload(body: Partial<CreateCoursePayload> | null): C
     return { error: "上課星期／節次不正確，至少要選一組。" };
   }
 
-  const capacity = Number(body.capacity);
-
-  if (!Number.isInteger(capacity) || capacity < 1 || capacity > 500) {
-    return { error: "名額必須介於 1 到 500 之間。" };
-  }
-
   const courseDates = parseCourseDates(body.courseDates);
 
   if (!courseDates) {
@@ -124,7 +118,8 @@ export function parseCoursePayload(body: Partial<CreateCoursePayload> | null): C
     title,
     category: body.category,
     schedule,
-    capacity,
+    // 全站課程統一限額，不接受個別設定，見 GLOBAL_CAPACITY。
+    capacity: GLOBAL_CAPACITY,
     // 全站課程只在同一個固定時間開放報名，不接受個別設定，見 GLOBAL_OPEN_AT。
     openAt: GLOBAL_OPEN_AT,
     courseDates,

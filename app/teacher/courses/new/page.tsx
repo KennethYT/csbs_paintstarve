@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { GLOBAL_OPEN_AT, GLOBAL_OPEN_AT_LABEL, categories, dayLabels, periods } from "@/lib/course-constants";
+import {
+  GLOBAL_CAPACITY,
+  GLOBAL_OPEN_AT,
+  GLOBAL_OPEN_AT_LABEL,
+  categories,
+  dayLabels,
+  periods
+} from "@/lib/course-constants";
 import type { CourseCategory, CourseScheduleSlot } from "@/lib/types";
 import { useClassroom } from "@/components/classroom-store";
 import { BackIcon } from "@/components/icons";
@@ -30,7 +37,6 @@ export default function TeacherCreateCoursePage() {
     syllabus: "",
     schedule: [{ day: 1, periodIndex: 0, startTime: null, endTime: null }] as CourseScheduleSlot[],
     location: "",
-    capacity: 30,
     courseDates: [todayLocalDate()],
     groupCount: 1
   });
@@ -99,7 +105,7 @@ export default function TeacherCreateCoursePage() {
         .split("\n")
         .map((line) => line.trim())
         .filter(Boolean),
-      capacity: form.capacity,
+      capacity: GLOBAL_CAPACITY,
       openAt: GLOBAL_OPEN_AT,
       courseDates: form.courseDates,
       groupCount: form.groupCount
@@ -291,17 +297,9 @@ export default function TeacherCreateCoursePage() {
           </Field>
 
           <Field label="名額" htmlFor="course-capacity">
-            <input
-              id="course-capacity"
-              className="input"
-              type="number"
-              min={1}
-              max={500}
-              value={form.capacity}
-              onChange={(event) =>
-                setForm((current) => ({ ...current, capacity: Number(event.target.value) || 1 }))
-              }
-            />
+            <div id="course-capacity" className="input" style={{ color: "var(--muted)", cursor: "default" }}>
+              {GLOBAL_CAPACITY} 人（全站課程統一限額，無法個別設定）
+            </div>
           </Field>
 
           <Field label="組數" htmlFor="course-group-count">
