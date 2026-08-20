@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { PoolClient } from "@neondatabase/serverless";
 import { getPool } from "@/lib/db";
+import { MAX_STUDENT_ENROLLMENTS } from "@/lib/course-constants";
 import type {
   Course,
   CourseCategory,
@@ -409,6 +410,17 @@ export async function grabCourse(courseId: string, userId: string): Promise<Grab
 
       if (existingRows[0]) {
         throw new CourseError("你已經選過或候補這門課了。", 409);
+      }
+
+      const {
+        rows: [{ count: selectedCount }]
+      } = await client.query<{ count: number }>(
+        `SELECT COUNT(*)::int AS count FROM "Enrollment" WHERE "userId" = $1`,
+        [userId]
+      );
+
+      if (selectedCount >= MAX_STUDENT_ENROLLMENTS) {
+        throw new CourseError(`最多只能選 ${MAX_STUDENT_ENROLLMENTS} 門課程，請先取消其他課程或候補。`, 409);
       }
 
       const {

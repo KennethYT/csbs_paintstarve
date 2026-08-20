@@ -1,7 +1,7 @@
-import { dayLabels, periods } from "@/lib/course-constants";
+import { dayLabels, MAX_STUDENT_ENROLLMENTS, periods } from "@/lib/course-constants";
 import type { Course, EnrollmentState } from "@/lib/types";
 
-export type StatusPhase = "upcoming" | "open" | "full" | "my-enrolled" | "my-waitlist";
+export type StatusPhase = "upcoming" | "open" | "full" | "limit-reached" | "my-enrolled" | "my-waitlist";
 
 export type CourseStatus = {
   phase: StatusPhase;
@@ -34,7 +34,12 @@ export function formatCountdown(ms: number) {
  * 課程對這位使用者的狀態。顏色不在這裡決定 —— 由 CSS 依 data-phase 上色
  * （見 app/globals.css 的 .status-text / .btn-status），避免把樣式寫死在邏輯裡。
  */
-export function getStatus(course: Course, now: number, enrollment?: EnrollmentState): CourseStatus {
+export function getStatus(
+  course: Course,
+  now: number,
+  enrollment?: EnrollmentState,
+  totalSelected = 0
+): CourseStatus {
   if (enrollment) {
     if (enrollment.status === "enrolled") {
       return { phase: "my-enrolled", label: "已搶到" };
@@ -45,6 +50,10 @@ export function getStatus(course: Course, now: number, enrollment?: EnrollmentSt
 
   if (now < course.openAt) {
     return { phase: "upcoming", label: formatCountdown(course.openAt - now) };
+  }
+
+  if (totalSelected >= MAX_STUDENT_ENROLLMENTS) {
+    return { phase: "limit-reached", label: `已達選課上限（${MAX_STUDENT_ENROLLMENTS} 門）` };
   }
 
   if (course.enrolled < course.capacity) {
@@ -58,13 +67,14 @@ export function getButtonLabel(phase: StatusPhase) {
   if (phase === "upcoming") return "尚未開放";
   if (phase === "open") return "報名";
   if (phase === "full") return "加入候補";
+  if (phase === "limit-reached") return "已達上限";
   if (phase === "my-enrolled") return "取消選課";
   return "取消候補";
 }
 
-/** 尚未開放的課程按鈕不能按，其餘都有對應動作。 */
+/** 尚未開放、或已達選課上限的課程按鈕不能按，其餘都有對應動作。 */
 export function isActionable(phase: StatusPhase) {
-  return phase !== "upcoming";
+  return phase !== "upcoming" && phase !== "limit-reached";
 }
 
 export function isCancelAction(phase: StatusPhase) {

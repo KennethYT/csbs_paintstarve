@@ -33,3 +33,6 @@ export const GLOBAL_OPEN_AT_LABEL = "2026/08/21 20:00";
 
 /** 全站課程統一限額 20 人，不論新舊課程，教師端無法個別設定。 */
 export const GLOBAL_CAPACITY = 20;
+
+/** 每位學生最多只能選（含候補）3 門課程。 */
+export const MAX_STUDENT_ENROLLMENTS = 3;

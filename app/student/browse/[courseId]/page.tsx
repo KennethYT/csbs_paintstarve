@@ -62,7 +62,8 @@ function CourseDetail({ courseId }: Readonly<{ courseId: string }>) {
     return null;
   }
 
-  const status = getStatus(course, classroom.now, classroom.studentEnrollments[course.id]);
+  const totalSelected = Object.keys(classroom.studentEnrollments).length;
+  const status = getStatus(course, classroom.now, classroom.studentEnrollments[course.id], totalSelected);
   const actionable = isActionable(status.phase);
   const cancels = isCancelAction(status.phase);
   const isPending = classroom.pendingCourseId === course.id;
