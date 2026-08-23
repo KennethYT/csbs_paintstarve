@@ -6,6 +6,7 @@ import { formatCourseDates, formatSchedule, getFillPct, getStatus } from "@/lib/
 import { useClassroom } from "@/components/classroom-store";
 import { CourseDataBoundary } from "@/components/course-states";
 import { DeleteIcon, LocationIcon } from "@/components/icons";
+import { COURSE_CREATION_ENABLED } from "@/lib/course-constants";
 
 export default function TeacherCoursesPage() {
   const classroom = useClassroom();
@@ -32,19 +33,25 @@ export default function TeacherCoursesPage() {
           <h1 className="section-title">我的課程</h1>
           <div className="page-head__subtitle">管理你開設的課程與報名狀態</div>
         </div>
-        <Link className="btn btn-brand" href="/teacher/courses/new" style={{ padding: "11px 18px", fontWeight: 900 }}>
-          + 建立新課程
-        </Link>
+        {COURSE_CREATION_ENABLED ? (
+          <Link className="btn btn-brand" href="/teacher/courses/new" style={{ padding: "11px 18px", fontWeight: 900 }}>
+            + 建立新課程
+          </Link>
+        ) : null}
       </div>
 
       <CourseDataBoundary>
         {teacherCourses.length === 0 ? (
           <div className="card empty-state">
             你還沒有開設任何課程。
-            <br />
-            <Link href="/teacher/courses/new" style={{ color: "var(--subtitle)", fontWeight: 900 }}>
-              建立第一門課程
-            </Link>
+            {COURSE_CREATION_ENABLED ? (
+              <>
+                <br />
+                <Link href="/teacher/courses/new" style={{ color: "var(--subtitle)", fontWeight: 900 }}>
+                  建立第一門課程
+                </Link>
+              </>
+            ) : null}
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>

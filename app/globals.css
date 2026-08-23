@@ -506,6 +506,7 @@ a {
 }
 
 .status-text[data-phase="upcoming"] { color: var(--status-upcoming); }
+.status-text[data-phase="closed"] { color: var(--status-upcoming); }
 .status-text[data-phase="open"] { color: var(--status-open); }
 .status-text[data-phase="full"] { color: var(--status-full); }
 .status-text[data-phase="my-enrolled"] { color: var(--status-enrolled); }
@@ -521,6 +522,12 @@ a {
 }
 
 .btn-status[data-phase="upcoming"] {
+  background: var(--status-upcoming-bg);
+  color: var(--status-upcoming);
+  border-color: var(--border-strong);
+}
+
+.btn-status[data-phase="closed"] {
   background: var(--status-upcoming-bg);
   color: var(--status-upcoming);
   border-color: var(--border-strong);

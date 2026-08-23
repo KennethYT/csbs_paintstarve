@@ -1,7 +1,7 @@
-import { dayLabels, periods } from "@/lib/course-constants";
+import { dayLabels, periods, REGISTRATION_ENABLED } from "@/lib/course-constants";
 import type { Course, EnrollmentState } from "@/lib/types";
 
-export type StatusPhase = "upcoming" | "open" | "full" | "my-enrolled" | "my-waitlist";
+export type StatusPhase = "upcoming" | "open" | "full" | "closed" | "my-enrolled" | "my-waitlist";
 
 export type CourseStatus = {
   phase: StatusPhase;
@@ -47,6 +47,10 @@ export function getStatus(course: Course, now: number, enrollment?: EnrollmentSt
     return { phase: "upcoming", label: formatCountdown(course.openAt - now) };
   }
 
+  if (!REGISTRATION_ENABLED) {
+    return { phase: "closed", label: "報名已關閉" };
+  }
+
   if (course.enrolled < course.capacity) {
     return { phase: "open", label: "報名中" };
   }
@@ -56,15 +60,16 @@ export function getStatus(course: Course, now: number, enrollment?: EnrollmentSt
 
 export function getButtonLabel(phase: StatusPhase) {
   if (phase === "upcoming") return "尚未開放";
+  if (phase === "closed") return "報名已關閉";
   if (phase === "open") return "報名";
   if (phase === "full") return "加入候補";
   if (phase === "my-enrolled") return "取消選課";
   return "取消候補";
 }
 
-/** 尚未開放的課程按鈕不能按，其餘都有對應動作。 */
+/** 尚未開放或報名已關閉時按鈕不能按，其餘都有對應動作。 */
 export function isActionable(phase: StatusPhase) {
-  return phase !== "upcoming";
+  return phase !== "upcoming" && phase !== "closed";
 }
 
 export function isCancelAction(phase: StatusPhase) {

@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { PoolClient } from "@neondatabase/serverless";
 import { getPool } from "@/lib/db";
+import { REGISTRATION_ENABLED } from "@/lib/course-constants";
 import type {
   Course,
   CourseCategory,
@@ -383,6 +384,10 @@ export type GrabResult =
   | { status: "waitlist"; position: number };
 
 export async function grabCourse(courseId: string, userId: string): Promise<GrabResult> {
+  if (!REGISTRATION_ENABLED) {
+    throw new CourseError("報名功能目前已關閉。", 409);
+  }
+
   return withRetry(() =>
     withTransaction(async (client) => {
       // 先排隊，之後的讀取與寫入就不會有其他人插進來

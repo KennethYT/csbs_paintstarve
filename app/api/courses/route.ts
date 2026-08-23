@@ -2,6 +2,7 @@ import { jsonError, jsonOk, readJson } from "@/lib/api";
 import { getSessionUserFromRequest } from "@/lib/session";
 import { createCourse, getCoursesSnapshot } from "@/lib/course-service";
 import { isPayloadError, parseCoursePayload } from "@/lib/course-validation";
+import { COURSE_CREATION_ENABLED } from "@/lib/course-constants";
 import type { CreateCoursePayload } from "@/lib/types";
 
 export async function GET(request: Request) {
@@ -24,6 +25,10 @@ export async function POST(request: Request) {
 
   if (user.role !== "teacher") {
     return jsonError("只有教師可以建立課程。", 403);
+  }
+
+  if (!COURSE_CREATION_ENABLED) {
+    return jsonError("目前暫停建立新課程。", 403);
   }
 
   const body = await readJson<Partial<CreateCoursePayload>>(request);

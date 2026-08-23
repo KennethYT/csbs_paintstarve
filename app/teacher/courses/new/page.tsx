@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  COURSE_CREATION_ENABLED,
   GLOBAL_CAPACITY,
   GLOBAL_OPEN_AT,
   GLOBAL_OPEN_AT_LABEL,
@@ -117,6 +118,21 @@ export default function TeacherCreateCoursePage() {
       router.push("/teacher/courses");
     }
   };
+
+  if (!COURSE_CREATION_ENABLED) {
+    return (
+      <section style={{ maxWidth: 640 }}>
+        <Link href="/teacher/courses" className="btn btn-link" style={{ marginBottom: 16 }}>
+          <BackIcon aria-hidden="true" />
+          回到我的課程
+        </Link>
+        <h1 className="section-title" style={{ marginBottom: 20 }}>
+          建立課程
+        </h1>
+        <div className="card empty-state">目前暫停建立新課程。</div>
+      </section>
+    );
+  }
 
   return (
     <section style={{ maxWidth: 640 }}>
