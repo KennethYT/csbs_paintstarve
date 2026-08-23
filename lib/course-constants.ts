@@ -34,13 +34,12 @@ export const GLOBAL_OPEN_AT_LABEL = "2026/08/21 20:00";
 /** 全站課程統一限額 20 人，不論新舊課程，教師端無法個別設定。 */
 export const GLOBAL_CAPACITY = 20;
 
-<<<<<<< HEAD
 /** 全站報名開關：關閉時所有課程一律無法報名／加入候補，即使已過開放時間。 */
 export const REGISTRATION_ENABLED = false;
 
 /** 全站建立課程開關：關閉時教師無法建立新課程，既有課程仍可編輯／刪除。 */
 export const COURSE_CREATION_ENABLED = false;
-=======
+
 /** 每位學生最多只能選（含候補）3 門課程。 */
 export const MAX_STUDENT_ENROLLMENTS = 3;
->>>>>>> fa36649fb911fc04ed274feffbfe27249957c78e
+

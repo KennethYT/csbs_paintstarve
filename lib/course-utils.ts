@@ -1,14 +1,7 @@
-<<<<<<< HEAD
-import { dayLabels, periods, REGISTRATION_ENABLED } from "@/lib/course-constants";
+import { dayLabels, MAX_STUDENT_ENROLLMENTS, periods, REGISTRATION_ENABLED } from "@/lib/course-constants";
 import type { Course, EnrollmentState } from "@/lib/types";
 
-export type StatusPhase = "upcoming" | "open" | "full" | "closed" | "my-enrolled" | "my-waitlist";
-=======
-import { dayLabels, MAX_STUDENT_ENROLLMENTS, periods } from "@/lib/course-constants";
-import type { Course, EnrollmentState } from "@/lib/types";
-
-export type StatusPhase = "upcoming" | "open" | "full" | "limit-reached" | "my-enrolled" | "my-waitlist";
->>>>>>> fa36649fb911fc04ed274feffbfe27249957c78e
+export type StatusPhase = "upcoming" | "open" | "full" | "closed" | "limit-reached" | "my-enrolled" | "my-waitlist";
 
 export type CourseStatus = {
   phase: StatusPhase;
@@ -59,13 +52,12 @@ export function getStatus(
     return { phase: "upcoming", label: formatCountdown(course.openAt - now) };
   }
 
-<<<<<<< HEAD
   if (!REGISTRATION_ENABLED) {
     return { phase: "closed", label: "報名已關閉" };
-=======
+  }
+
   if (totalSelected >= MAX_STUDENT_ENROLLMENTS) {
     return { phase: "limit-reached", label: `已達選課上限（${MAX_STUDENT_ENROLLMENTS} 門）` };
->>>>>>> fa36649fb911fc04ed274feffbfe27249957c78e
   }
 
   if (course.enrolled < course.capacity) {
@@ -85,15 +77,9 @@ export function getButtonLabel(phase: StatusPhase) {
   return "取消候補";
 }
 
-<<<<<<< HEAD
-/** 尚未開放或報名已關閉時按鈕不能按，其餘都有對應動作。 */
+/** 尚未開放、報名已關閉、或已達選課上限的課程按鈕不能按，其餘都有對應動作。 */
 export function isActionable(phase: StatusPhase) {
-  return phase !== "upcoming" && phase !== "closed";
-=======
-/** 尚未開放、或已達選課上限的課程按鈕不能按，其餘都有對應動作。 */
-export function isActionable(phase: StatusPhase) {
-  return phase !== "upcoming" && phase !== "limit-reached";
->>>>>>> fa36649fb911fc04ed274feffbfe27249957c78e
+  return phase !== "upcoming" && phase !== "closed" && phase !== "limit-reached";
 }
 
 export function isCancelAction(phase: StatusPhase) {

@@ -1,11 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { PoolClient } from "@neondatabase/serverless";
 import { getPool } from "@/lib/db";
-<<<<<<< HEAD
-import { REGISTRATION_ENABLED } from "@/lib/course-constants";
-=======
-import { MAX_STUDENT_ENROLLMENTS } from "@/lib/course-constants";
->>>>>>> fa36649fb911fc04ed274feffbfe27249957c78e
+import { MAX_STUDENT_ENROLLMENTS, REGISTRATION_ENABLED } from "@/lib/course-constants";
 import type {
   Course,
   CourseCategory,
