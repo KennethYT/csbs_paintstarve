@@ -31,6 +31,8 @@ export default function StudentBrowsePage() {
     });
   }, [categoryFilter, classroom.courses, search]);
 
+  const totalSelected = Object.keys(classroom.studentEnrollments).length;
+
   return (
     <section>
       <div className="page-head">
@@ -71,7 +73,12 @@ export default function StudentBrowsePage() {
         ) : (
           <div className="grid-auto">
             {courses.map((course) => {
-              const status = getStatus(course, classroom.now, classroom.studentEnrollments[course.id]);
+              const status = getStatus(
+                course,
+                classroom.now,
+                classroom.studentEnrollments[course.id],
+                totalSelected
+              );
               const actionable = isActionable(status.phase);
               const cancels = isCancelAction(status.phase);
               const isPending = classroom.pendingCourseId === course.id;
