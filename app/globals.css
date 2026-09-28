@@ -1736,6 +1736,18 @@ html:has(.lightbox[open]) {
   animation: fadeUp 0.25s ease;
 }
 
+/* 影片作品（YouTube Shorts）：直式 9:16，塞進舞台高度 */
+.lightbox__video {
+  display: block;
+  height: 100%;
+  max-width: 100%;
+  aspect-ratio: 9 / 16;
+  border: 0;
+  border-radius: 8px;
+  background: #000;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
 .lightbox__button {
   display: inline-flex;
   align-items: center;

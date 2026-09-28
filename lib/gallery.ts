@@ -36,6 +36,11 @@ export type GalleryWork = {
   artists: GalleryArtist[];
   /** 額外的署名說明，例如代為投稿的人 */
   note?: string;
+  /**
+   * 影片作品的 YouTube 影片 ID。有的話 images 只放一張封面，
+   * 燈箱裡改嵌 YouTube 官方播放器，影片本身不另存在本站。
+   */
+  youtube?: string;
   /** 多張圖時第一張當封面，燈箱裡依序翻頁 */
   images: GalleryImage[];
 };
@@ -436,6 +441,22 @@ export const GALLERY_WORKS: GalleryWork[] = [
     artists: [{ name: "@Aijunart", url: "https://x.com/Aijunart" }],
     images: [
       img("aijunart-1", 1600, 900, "#f8f8e8")
+    ]
+  },
+  {
+    id: "xus74457",
+    artists: [{ name: "@xus74457", url: "https://x.com/xus74457" }],
+    images: [
+      img("xus74457-1", 1600, 1321, "#f8f8f8")
+    ]
+  },
+  {
+    id: "yangyang-short",
+    title: "我畫了4小時30分鐘就為了這個",
+    artists: [{ name: "陽陽", url: "https://www.youtube.com/@陽陽-360" }],
+    youtube: "oyiQNsd6tQ8",
+    images: [
+      img("yangyang-short-1", 1080, 1920, "#d8e8e8")
     ]
   }
 ];

@@ -72,6 +72,7 @@ export default function RulesPage() {
             <h2 className="rules__title">三、本站的防護措施</h2>
             <ul className="rules__list">
               <li>所有展示的圖片都已縮小，並壓上作者署名與「禁止 AI 學習」的浮水印；原始高解析檔案不會放在本站。</li>
+              <li>影片作品直接嵌入作者在 YouTube 上的影片，本站不另外保存影片檔。</li>
               <li>透過 robots.txt、ai.txt 以及 noai、TDM 保留聲明，拒絕已知的 AI 爬蟲收集本站內容。</li>
               <li>
                 這些措施只擋得住遵守規則的爬蟲，無法完全防止盜用。作者如果想進一步保護，可以在投稿前自行用 Glaze、Nightshade 等工具處理原圖。

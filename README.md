@@ -114,6 +114,9 @@ proxy.ts                        edge 層的 cookie 檢查（非授權依據）
 直接讀 `public/` 的檔案。清單裡的 `width`／`height` 填大圖的實際像素（格線靠它預留版面），
 `color` 填圖片主色（載入前的底色）。透明背景的線稿請先鋪白底，否則在深色頁面上會看不見。
 
+影片作品（例如 YouTube Shorts）在作品上加 `youtube: "<影片 ID>"`，`images` 只放一張封面（同樣要壓水印）；
+燈箱裡會改嵌 YouTube 官方播放器（`youtube-nocookie.com`），影片檔不存在本站。
+
 ### 防止 AI 盜用
 
 | 措施 | 在哪裡 |

@@ -13,6 +13,7 @@ import {
   FiLink,
   FiList,
   FiMapPin,
+  FiPlay,
   FiShield,
   FiTrash2,
   FiX
@@ -34,6 +35,7 @@ export {
   FiChevronRight as NextIcon,
   FiX as CloseIcon,
   FiLayers as PagesIcon,
+  FiPlay as PlayIcon,
   FiShield as ShieldIcon,
   FiClock as ClockIcon,
   FiCode as CodeIcon,

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent, MouseEvent, TouchEvent } from "react";
-import { CloseIcon, NextIcon, PagesIcon, PrevIcon } from "@/components/icons";
+import { CloseIcon, NextIcon, PagesIcon, PlayIcon, PrevIcon } from "@/components/icons";
 import type { GalleryArtist, GalleryWork } from "@/lib/gallery";
 
 /** 燈箱裡的一頁：所有作品的所有圖片攤平成一條，左右鍵可以一路翻到下一件作品。 */
@@ -161,7 +161,12 @@ export function Gallery({ works }: Readonly<{ works: GalleryWork[] }>) {
                     draggable={false}
                     className="gallery__image"
                   />
-                  {work.images.length > 1 ? (
+                  {work.youtube ? (
+                    <span className="gallery__badge">
+                      <PlayIcon aria-hidden="true" />
+                      影片
+                    </span>
+                  ) : work.images.length > 1 ? (
                     <span className="gallery__badge">
                       <PagesIcon aria-hidden="true" />
                       {work.images.length} 張
@@ -207,18 +212,31 @@ export function Gallery({ works }: Readonly<{ works: GalleryWork[] }>) {
                 </button>
               ) : null}
 
-              <Image
-                key={image.src}
-                src={image.src}
-                alt={[slide.work.title, image.caption].filter(Boolean).join("：") || `${artistNames(slide.work.artists)} 的作品`}
-                width={image.width}
-                height={image.height}
-                unoptimized
-                loading="eager"
-                draggable={false}
-                className="lightbox__image"
-                style={{ backgroundColor: image.color }}
-              />
+              {slide.work.youtube ? (
+                // 影片作品直接嵌 YouTube 官方播放器（nocookie 網域），影片不另存在本站
+                <iframe
+                  key={slide.work.youtube}
+                  src={`https://www.youtube-nocookie.com/embed/${slide.work.youtube}?rel=0&playsinline=1`}
+                  title={`${slide.work.title ?? "影片作品"} — ${artistNames(slide.work.artists)}`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                  className="lightbox__video"
+                />
+              ) : (
+                <Image
+                  key={image.src}
+                  src={image.src}
+                  alt={[slide.work.title, image.caption].filter(Boolean).join("：") || `${artistNames(slide.work.artists)} 的作品`}
+                  width={image.width}
+                  height={image.height}
+                  unoptimized
+                  loading="eager"
+                  draggable={false}
+                  className="lightbox__image"
+                  style={{ backgroundColor: image.color }}
+                />
+              )}
 
               {slides.length > 1 ? (
                 <button
