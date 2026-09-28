@@ -28,7 +28,7 @@ export function AuthHero({
         <div className="login-hero__ribbon login-hero__ribbon--bottom" />
 
         <div className="login-hero__content">
-          <div className="login-hero__eyebrow">Course Selection Platform</div>
+          <div className="login-hero__eyebrow">Summer Elective Gallery</div>
           <div className="login-hero__title">{title}</div>
           <div className="login-hero__subtitle">{subtitle}</div>
         </div>

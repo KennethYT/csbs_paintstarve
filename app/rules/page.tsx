@@ -4,7 +4,7 @@ import { ShieldIcon } from "@/components/icons";
 import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
-  title: "網站規範 | 選課報名系統"
+  title: "網站規範 | 暑期選修作品畫廊"
 };
 
 /** 網站規範。純靜態內容，要改規則直接改這個檔案。 */

@@ -58,7 +58,7 @@ const AI_CRAWLERS: { operator: string; agents: string[] }[] = [
 const IMAGE_CRAWLERS = ["Googlebot-Image", "YandexImages", "Baiduspider-image"];
 
 const POLICY = `# ================================================================
-#  robots.txt — 選課報名系統
+#  robots.txt — 暑期選修作品畫廊
 #  最後更新：${UPDATED}
 #  完整網站規範：/rules　　AI 聲明：/ai.txt
 # ================================================================

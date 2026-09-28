@@ -9,8 +9,8 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "選課報名系統",
-  description: "Next.js 16 版的選課報名系統",
+  title: "暑期選修作品畫廊",
+  description: "暑期選修課程的同學作品畫廊，登入後可選課報名。",
   // 拒絕 AI 收集本站內容：noai / noimageai 是慣例標記，tdm-reservation 是歐盟 TDM 保留聲明。
   // 圖檔本身的同款標頭在 public/_headers。
   robots: "noai, noimageai",
