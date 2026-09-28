@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getAuth } from "@/lib/auth";
 import { resolveDiscordRoleForUser } from "@/lib/discord";
+import { getRoleHome } from "@/lib/roles";
 
 /**
  * Discord OAuth 的回呼落點。身份組解析在伺服器端完成後直接導向對應入口，
@@ -20,5 +21,5 @@ export default async function DiscordCompletePage() {
     redirect(`/login?discord=failed&reason=${encodeURIComponent(result.message)}`);
   }
 
-  redirect(result.role === "teacher" ? "/teacher/courses" : "/student/browse");
+  redirect(getRoleHome(result.role));
 }

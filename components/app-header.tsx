@@ -7,6 +7,7 @@ import { useState } from "react";
 import { BRAND_NAME, BrandLogo } from "@/components/brand";
 import { authClient } from "@/lib/auth-client";
 import { useClassroom } from "@/components/classroom-store";
+import { getRoleHome } from "@/lib/roles";
 import type { Role } from "@/lib/types";
 
 type HeaderTab = {
@@ -46,10 +47,12 @@ export function AppHeader({
 
     try {
       const response = await fetch("/api/switch-role", { method: "POST" });
-      const payload = (await response.json()) as { ok: boolean; message?: string };
+      const payload = (await response.json()) as { ok: boolean; role?: Role; message?: string };
 
-      if (response.ok && payload.ok) {
-        window.location.href = "/";
+      // 首頁現在是公開畫廊、不會再依身分轉址，所以直接跳到新身分的入口。
+      // 用整頁跳轉而不是 router.push，讓 RoleShell 重新做一次角色把關。
+      if (response.ok && payload.ok && payload.role) {
+        window.location.href = getRoleHome(payload.role);
         return;
       }
 
@@ -66,9 +69,10 @@ export function AppHeader({
 
     try {
       const response = await fetch("/api/dev/switch-role", { method: "POST" });
+      const payload = (await response.json().catch(() => ({ ok: false }))) as { ok: boolean; role?: Role };
 
-      if (response.ok) {
-        window.location.href = "/";
+      if (response.ok && payload.ok && payload.role) {
+        window.location.href = getRoleHome(payload.role);
         return;
       }
     } finally {

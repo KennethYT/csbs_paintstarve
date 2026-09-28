@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getAuth } from "@/lib/auth";
+import { getRoleHome } from "@/lib/roles";
 import type { Role, SessionUser } from "@/lib/types";
 
 function toRole(value: unknown): Role | null {
@@ -64,7 +65,7 @@ export async function requireRole(role: Role): Promise<SessionUser> {
   }
 
   if (user.role !== role) {
-    redirect(user.role === "teacher" ? "/teacher/courses" : "/student/browse");
+    redirect(getRoleHome(user.role));
   }
 
   return user;

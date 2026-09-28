@@ -6,6 +6,11 @@
 
 ## 功能
 
+**首頁**
+- 公開的作品畫廊，未登入也能看；右上角依登入狀態顯示「登入」或「進入學生區／教師區」
+- 點作品開燈箱放大，多頁作品（漫畫、課堂筆記）可用左右鍵、按鈕或手機滑動翻頁
+- 圖片壓有作者署名與「禁止 AI 學習」水印，並拒絕 AI 爬蟲；網站規範在 `/rules`
+
 **學生**
 - 瀏覽課程，可依名稱／教師搜尋、依分類篩選
 - 報名；額滿時自動加入候補並顯示排序
@@ -35,7 +40,7 @@ pnpm db:seed              # 匯入 7 門示範課程與選課紀錄
 pnpm dev
 ```
 
-打開 http://localhost:3000 ，按「使用 Discord 登入」。你的 Discord 帳號必須已經在
+打開 http://localhost:3000 會先看到作品畫廊，按右上角「登入」再按「使用 Discord 登入」。你的 Discord 帳號必須已經在
 `DISCORD_GUILD_ID` 指定的伺服器裡，並持有 `DISCORD_TEACHER_ROLE_ID` 或
 `DISCORD_STUDENT_ROLE_ID` 其中一個身份組，否則會被擋在登入頁。
 
@@ -64,7 +69,9 @@ pnpm dev
 
 ```
 app/
-  page.tsx                      依登入身分導向對應入口
+  page.tsx                      公開首頁：作品畫廊 + 依登入身分顯示的入口按鈕
+  rules/                        網站規範（純靜態，要改規則直接改這頁）
+  robots.txt/route.ts           robots.txt：拒絕 AI 爬蟲與圖片搜尋爬蟲，附中英文禁止 AI 聲明
   login/                        登入頁（版面在 components/auth-hero.tsx）
   discord/complete/             Discord OAuth 回呼，伺服器端解析身份組後導向
   student/                      學生區（layout 做角色把關）
@@ -79,11 +86,48 @@ lib/
   course-service.ts             課程／選課的核心邏輯，含併發控制
   course-utils.ts               狀態判斷與格式化
   course-constants.ts           分類、星期、節次
+  roles.ts                      各身分的入口網址（client / server 共用）
+  gallery.ts                    畫廊作品清單
 components/
   classroom-store.tsx           前端狀態：首屏由伺服器帶入，之後輪詢更新
   role-shell.tsx                server component，角色把關 + 首屏資料
+  gallery.tsx                   畫廊格線 + 燈箱
+  site-header.tsx               公開頁面（首頁、規範）的頁首
+public/gallery/                 畫廊圖片（已縮好、壓好水印的 webp，大圖 + 縮圖）
+public/_headers                 Cloudflare 靜態檔的回應標頭（圖檔的 noai 標記）
+public/ai.txt                   Spawning ai.txt，拒絕 AI 訓練
 proxy.ts                        edge 層的 cookie 檢查（非授權依據）
 ```
+
+### 畫廊
+
+作品清單在 `lib/gallery.ts`，一件作品可以有多張圖（第一張當封面，燈箱裡依序翻頁）。
+圖片放 `public/gallery/`，每張要準備兩個檔：
+
+| 檔名 | 用途 | 建議尺寸 |
+|---|---|---|
+| `<名稱>.webp` | 燈箱大圖 | 長寬不超過 1600×2000 |
+| `<名稱>-thumb.webp` | 格線縮圖 | 寬 640px |
+
+**一定要先縮好再放進來。** 部署到 Workers 後沒有 Cloudflare Images（`IMAGES` binding），
+`/_next/image` 不會真的壓縮，只會把原圖原封不動傳回去，所以畫廊元件一律用 `unoptimized`
+直接讀 `public/` 的檔案。清單裡的 `width`／`height` 填大圖的實際像素（格線靠它預留版面），
+`color` 填圖片主色（載入前的底色）。透明背景的線稿請先鋪白底，否則在深色頁面上會看不見。
+
+### 防止 AI 盜用
+
+| 措施 | 在哪裡 |
+|---|---|
+| 水印直接壓進圖檔（大圖與縮圖都有）：滿版淡斜紋「@作者 · NO AI TRAINING · 禁止 AI 學習」+ 右下角「© @作者 · 禁止 AI 學習／轉載」 | `public/gallery/*.webp` |
+| robots.txt 整站拒絕 GPTBot、ClaudeBot、CCBot、Google-Extended 等 AI 爬蟲與圖片搜尋爬蟲；一般搜尋引擎不收錄圖檔 | `app/robots.txt/route.ts` |
+| `noai, noimageai` 與 `tdm-reservation`：頁面用 meta，圖檔用回應標頭 | `app/layout.tsx`、`public/_headers` |
+| Spawning ai.txt | `public/ai.txt` |
+| 圖片擋右鍵、拖曳與 iOS 長按另存 | `components/gallery.tsx`、`globals.css` |
+
+**新增圖片時水印要自己先壓好**，網頁上不會另外疊。這些措施都只擋得住守規矩的爬蟲與一般使用者，
+截圖或刻意移除水印仍然擋不住；需要更強保護的作者可以在投稿前自行用 Glaze／Nightshade 處理原圖。
+
+> `public/_headers` 只在部署到 Cloudflare 後生效（`pnpm preview` 可以驗證），`pnpm dev` 看不到這些標頭。
 
 ### 報名的併發正確性
 

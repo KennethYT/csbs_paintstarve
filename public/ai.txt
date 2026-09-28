@@ -1,0 +1,4 @@
+# Spawning ai.txt（https://site.spawning.ai/spawning-ai-txt）
+# 本站所有作品著作權屬於原作者，禁止用於 AI 訓練或建立資料集。
+User-Agent: *
+Disallow: /

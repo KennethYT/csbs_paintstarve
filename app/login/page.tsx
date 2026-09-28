@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AuthHero } from "@/components/auth-hero";
@@ -81,6 +82,12 @@ function LoginPageInner() {
       </div>
 
       <div className="login-sidebar__links">
+        <Link href="/" className="btn-link">
+          回首頁看作品
+        </Link>
+        <Link href="/rules" className="btn-link">
+          網站規範
+        </Link>
         <span>Helpdesk</span>
       </div>
     </AuthHero>

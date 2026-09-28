@@ -1,0 +1,6 @@
+# Cloudflare Workers 靜態資源的回應標頭：https://developers.cloudflare.com/workers/static-assets/headers/
+# 部署後 public/ 的檔案由 Cloudflare 直接回應、不經過 Next.js，next.config 的 headers() 管不到這裡。
+# noai / noimageai：拒絕 AI 收集的慣例標記；tdm-reservation：歐盟 TDM 保留聲明（TDMRep）。
+/gallery/*
+  X-Robots-Tag: noindex, noai, noimageai
+  tdm-reservation: 1

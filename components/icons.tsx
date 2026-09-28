@@ -4,14 +4,18 @@ import {
   FiArrowLeft,
   FiCheck,
   FiCheckCircle,
+  FiChevronLeft,
   FiChevronRight,
   FiClock,
   FiCode,
   FiHash,
+  FiLayers,
   FiLink,
   FiList,
   FiMapPin,
-  FiTrash2
+  FiShield,
+  FiTrash2,
+  FiX
 } from "react-icons/fi";
 import type { ModalIconKind } from "@/lib/types";
 
@@ -26,6 +30,11 @@ export {
   FiCheck as CheckIcon,
   FiCheckCircle as SuccessIcon,
   FiChevronRight as BulletIcon,
+  FiChevronLeft as PrevIcon,
+  FiChevronRight as NextIcon,
+  FiX as CloseIcon,
+  FiLayers as PagesIcon,
+  FiShield as ShieldIcon,
   FiClock as ClockIcon,
   FiCode as CodeIcon,
   FiHash as HeadingIcon,
