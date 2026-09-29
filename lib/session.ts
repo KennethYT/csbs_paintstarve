@@ -53,6 +53,17 @@ export async function getSessionUserFromRequest(request: Request): Promise<Sessi
   return { id: session.user.id, name: session.user.name, role, canSwitchRole };
 }
 
+/** Server component 專用：沒登入就轉去登入頁，不管身分（畫廊投稿用）。 */
+export async function requireUser(): Promise<SessionUser> {
+  const user = await getSessionUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  return user;
+}
+
 /**
  * Server component 專用：角色不符就轉走。
  * 已登入但角色不對時導向自己該去的頁面，而不是把人踢回登入頁。

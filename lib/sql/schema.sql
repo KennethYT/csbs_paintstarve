@@ -164,3 +164,32 @@ CREATE TABLE IF NOT EXISTS "Enrollment" (
 );
 CREATE INDEX IF NOT EXISTS "Enrollment_courseId_status_idx" ON "Enrollment" ("courseId", status);
 CREATE INDEX IF NOT EXISTS "Enrollment_userId_idx" ON "Enrollment" ("userId");
+
+-- ---- 畫廊投稿 ----------------------------------------------------------------
+
+-- 登入後從 /submit 上傳到畫廊的作品（見 lib/gallery-submissions.ts）。
+-- 圖檔放在 R2（wrangler.jsonc 的 GALLERY_BUCKET），這裡只存中繼資料；
+-- 一件作品的圖片與連結都跟著作品一起讀寫，所以直接用 JSONB，不另外開表。
+CREATE TABLE IF NOT EXISTS "GallerySubmission" (
+  id TEXT PRIMARY KEY,
+  "userId" TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  title TEXT,
+  -- 作品署名（例如 @帳號），投稿時預設帶入 Discord 名稱，可以自己改
+  "artistName" TEXT NOT NULL,
+  "artistUrl" TEXT,
+  description TEXT,
+  -- 影片作品的 YouTube 影片 ID；有的話可以不附圖
+  "youtubeId" TEXT,
+  -- 相關連結網址的陣列：["https://…", …]
+  links JSONB NOT NULL DEFAULT '[]',
+  -- [{ "file": "1.webp", "thumb": "1-thumb.webp", "width": 1600, "height": 1200, "color": "#f8f8f8" }, …]
+  -- file / thumb 是 R2 裡 submissions/<id>/ 底下的檔名
+  images JSONB NOT NULL DEFAULT '[]',
+  -- published：公開中；removed：已被管理員下架（R2 圖檔搬到 removed/<id>/，不再對外提供，可以恢復）
+  status TEXT NOT NULL DEFAULT 'published' CHECK (status IN ('published', 'removed')),
+  "statusChangedBy" TEXT REFERENCES "user"(id) ON DELETE SET NULL,
+  "statusChangedAt" TIMESTAMPTZ,
+  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS "GallerySubmission_status_createdAt_idx" ON "GallerySubmission" (status, "createdAt" DESC);
+CREATE INDEX IF NOT EXISTS "GallerySubmission_userId_createdAt_idx" ON "GallerySubmission" ("userId", "createdAt" DESC);

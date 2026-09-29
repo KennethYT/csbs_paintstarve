@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/app-header";
+import { COURSE_SYSTEM_ENABLED } from "@/lib/course-constants";
 import { requireRole } from "@/lib/session";
 import { ClassroomProvider } from "@/components/classroom-store";
 import { getCoursesSnapshot } from "@/lib/course-service";
@@ -19,6 +21,11 @@ export async function RoleShell({
   tabs,
   children
 }: Readonly<{ role: Role; tabs: ShellTab[]; children: ReactNode }>) {
+  // 選課系統關閉時學生區／教師區整個不開放，已登入的人也一樣導回首頁
+  if (!COURSE_SYSTEM_ENABLED) {
+    redirect("/");
+  }
+
   const user = await requireRole(role);
   // 首屏資料在伺服器就取好，避免進頁面先閃一次骨架
   const snapshot = await getCoursesSnapshot(user.id);

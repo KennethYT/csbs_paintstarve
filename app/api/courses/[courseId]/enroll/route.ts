@@ -1,9 +1,15 @@
-import { jsonError, jsonOk } from "@/lib/api";
+import { courseSystemClosed, jsonError, jsonOk } from "@/lib/api";
 import { getSessionUserFromRequest } from "@/lib/session";
 import { CourseError, cancelEnrollment, grabCourse } from "@/lib/course-service";
 
 /** 報名／加入候補 */
 export async function POST(request: Request, context: { params: Promise<{ courseId: string }> }) {
+  const closed = courseSystemClosed();
+
+  if (closed) {
+    return closed;
+  }
+
   const user = await getSessionUserFromRequest(request);
 
   if (!user) {
@@ -31,6 +37,12 @@ export async function POST(request: Request, context: { params: Promise<{ course
 
 /** 退選／取消候補 */
 export async function DELETE(request: Request, context: { params: Promise<{ courseId: string }> }) {
+  const closed = courseSystemClosed();
+
+  if (closed) {
+    return closed;
+  }
+
   const user = await getSessionUserFromRequest(request);
 
   if (!user) {

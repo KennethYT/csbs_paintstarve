@@ -1,8 +1,14 @@
-import { jsonError, jsonOk } from "@/lib/api";
+import { courseSystemClosed, jsonError, jsonOk } from "@/lib/api";
 import { getSessionUserFromRequest } from "@/lib/session";
 import { CourseError, getRoster } from "@/lib/course-service";
 
 export async function GET(request: Request, context: { params: Promise<{ courseId: string }> }) {
+  const closed = courseSystemClosed();
+
+  if (closed) {
+    return closed;
+  }
+
   const user = await getSessionUserFromRequest(request);
 
   if (!user) {

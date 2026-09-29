@@ -34,6 +34,22 @@ export const GLOBAL_OPEN_AT_LABEL = "2026/08/21 20:00";
 /** 全站課程統一限額 20 人，不論新舊課程，教師端無法個別設定。 */
 export const GLOBAL_CAPACITY = 20;
 
+/**
+ * 選課系統總開關。關閉時網站只剩作品畫廊與網站規範：首頁不再提供登入，
+ * /login、/student、/teacher、/discord/complete 一律導回首頁，選課與登入 API 一律回 404，
+ * 已登入的人也進不去。程式與資料庫都保留，要恢復改回 true 即可。
+ */
+export const COURSE_SYSTEM_ENABLED = false;
+
+/**
+ * 畫廊投稿開關。開著時開放 Discord 登入，登入後只能在 /submit 上傳圖片／連結到畫廊，
+ * 管理員（lib/gallery-admins.ts 清單裡的 Discord 帳號）可以在 /manage 下架投稿（見 lib/gallery-submissions.ts）。
+ */
+export const GALLERY_SUBMISSION_ENABLED = true;
+
+/** 登入是否開放：選課系統或畫廊投稿任一個開著就要能登入。 */
+export const LOGIN_ENABLED = COURSE_SYSTEM_ENABLED || GALLERY_SUBMISSION_ENABLED;
+
 /** 全站報名開關：關閉時所有課程一律無法報名／加入候補，即使已過開放時間。 */
 export const REGISTRATION_ENABLED = false;
 

@@ -87,7 +87,7 @@ const POLICY = `# ==============================================================
 #     移除、裁切或遮蓋都違反本站規範。
 #   - 依歐盟《數位單一市場著作權指令》（Directive (EU) 2019/790）
 #     第 4 條第 3 項，本站明確保留文字與資料探勘（TDM）的權利。
-#     /gallery/ 的圖檔回應也附有 X-Robots-Tag: noai, noimageai
+#     /gallery/ 與投稿圖檔 /uploads/ 的回應也附有 X-Robots-Tag: noai, noimageai
 #     與 tdm-reservation: 1。
 #   - 想使用作品，請直接聯絡作品下方標示的作者，取得本人同意。
 #
@@ -157,6 +157,7 @@ const BODY = [
   "Content-Signal: search=yes, ai-input=no, ai-train=no",
   "Allow: /",
   "Disallow: /gallery/",
+  "Disallow: /uploads/",
   ""
 ].join("\n");
 

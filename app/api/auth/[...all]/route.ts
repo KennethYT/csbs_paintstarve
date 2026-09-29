@@ -1,3 +1,4 @@
+import { loginClosed } from "@/lib/api";
 import { getAuth } from "@/lib/auth";
 import { toNextJsHandler } from "better-auth/next-js";
 
@@ -6,9 +7,21 @@ import { toNextJsHandler } from "better-auth/next-js";
 // Cloudflare Workers 上會被判定成跨請求重用 I/O 而砍斷。改成每個請求進來時
 // 才呼叫 getAuth()，讓 lib/db.ts 的 cache() 給這次請求一份新的連線。
 export async function GET(request: Request) {
+  const closed = loginClosed();
+
+  if (closed) {
+    return closed;
+  }
+
   return toNextJsHandler(getAuth()).GET(request);
 }
 
 export async function POST(request: Request) {
+  const closed = loginClosed();
+
+  if (closed) {
+    return closed;
+  }
+
   return toNextJsHandler(getAuth()).POST(request);
 }

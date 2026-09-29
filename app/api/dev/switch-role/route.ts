@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { courseSystemClosed } from "@/lib/api";
 import { getPool } from "@/lib/db";
 import { getSessionUserFromRequest } from "@/lib/session";
 
@@ -8,6 +9,12 @@ import { getSessionUserFromRequest } from "@/lib/session";
  * 這裡再多一層執行期檢查保險）。
  */
 export async function POST(request: Request) {
+  const closed = courseSystemClosed();
+
+  if (closed) {
+    return closed;
+  }
+
   if (process.env.NODE_ENV === "production") {
     return NextResponse.json({ ok: false, message: "Not found." }, { status: 404 });
   }

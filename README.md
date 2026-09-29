@@ -1,15 +1,30 @@
 # 暑期選修作品畫廊
 
-暑期選修課程的同學作品畫廊（公開首頁），登入後同時是選課／報名系統：學生在開放時間瞬間搶有限名額、額滿自動排候補；教師開課、管理名單、看儀表板。
+暑期選修課程的同學作品畫廊（公開首頁）。用 Discord 登入後可以投稿圖片／連結到畫廊。
+原本的選課／報名系統（學生在開放時間瞬間搶有限名額、額滿自動排候補；教師開課、管理名單、看儀表板）目前已關閉。
+
+> **開關**都在 `lib/course-constants.ts`：
+>
+> - `COURSE_SYSTEM_ENABLED`（目前 `false`）：選課系統。關閉時 `/student`、`/teacher` 一律導回首頁，
+>   選課 API 一律回 404，已登入的人也進不去。程式與資料庫都保留，改回 `true` 就恢復原狀。
+> - `GALLERY_SUBMISSION_ENABLED`（目前 `true`）：畫廊投稿，見下方「畫廊投稿」。
+> - 兩個都關掉時 `/login` 與登入 API（`/api/auth`）也跟著關閉，網站只剩畫廊與網站規範。
+>
+> 以下關於選課的說明，都是選課系統開著時的行為。
 
 以 **Next.js 16（App Router）+ React 19 + TypeScript + PostgreSQL（Neon，原生 SQL）** 打造，登入使用 **better-auth**，身分一律由 Discord 伺服器的身份組自動辨識。
 
 ## 功能
 
 **首頁**
-- 公開的作品畫廊，未登入也能看；右上角依登入狀態顯示「登入」或「進入學生區／教師區」
+- 公開的作品畫廊，不需要登入；右上角依登入狀態顯示「登入投稿」或「投稿作品」（管理員另有「管理投稿」）
 - 點作品開燈箱放大，多頁作品（漫畫、課堂筆記）可用左右鍵、按鈕或手機滑動翻頁
 - 圖片壓有作者署名與「禁止 AI 學習」水印，並拒絕 AI 爬蟲；網站規範在 `/rules`
+
+**畫廊投稿**
+- 登入後在 `/submit` 上傳圖片（最多 20 張，多頁依序翻）或貼 YouTube 連結，可附標題、說明、作者連結與相關連結
+- 圖片在瀏覽器端就縮圖、鋪白底、壓上跟既有作品一樣的水印，再上傳到 Cloudflare R2
+- 送出後立即公開、不需審核；只有管理員（`lib/gallery-admins.ts` 清單裡的 Discord 帳號）可以在 `/manage` 下架／恢復
 
 **學生**
 - 瀏覽課程，可依名稱／教師搜尋、依分類篩選
@@ -40,7 +55,7 @@ pnpm db:seed              # 匯入 7 門示範課程與選課紀錄
 pnpm dev
 ```
 
-打開 http://localhost:3000 會先看到作品畫廊，按右上角「登入」再按「使用 Discord 登入」。你的 Discord 帳號必須已經在
+打開 http://localhost:3000 會先看到作品畫廊。選課系統開著時，按右上角「登入」再按「使用 Discord 登入」。你的 Discord 帳號必須已經在
 `DISCORD_GUILD_ID` 指定的伺服器裡，並持有 `DISCORD_TEACHER_ROLE_ID` 或
 `DISCORD_STUDENT_ROLE_ID` 其中一個身份組，否則會被擋在登入頁。
 
@@ -69,7 +84,10 @@ pnpm dev
 
 ```
 app/
-  page.tsx                      公開首頁：作品畫廊 + 依登入身分顯示的入口按鈕
+  page.tsx                      公開首頁：投稿作品 + 既有作品的畫廊，右上角依登入狀態顯示入口
+  submit/                       投稿頁（登入後）：投稿表單 + 我的投稿
+  manage/                       管理投稿（僅管理員）：下架／恢復
+  uploads/[id]/[file]/          投稿圖檔，從 R2 讀出並附上 noai 標頭
   rules/                        網站規範（純靜態，要改規則直接改這頁）
   robots.txt/route.ts           robots.txt：拒絕 AI 爬蟲與圖片搜尋爬蟲，附中英文禁止 AI 聲明
   login/                        登入頁（版面在 components/auth-hero.tsx）
@@ -81,18 +99,25 @@ app/
     courses/                    課程列表／建立
     courses/[courseId]/enroll/  報名（POST）與退選（DELETE）
     courses/[courseId]/roster/  選課名單（僅授課教師）
+    gallery/submissions/        投稿（POST）；[id] 管理員下架／恢復（PATCH）
 lib/
   auth.ts  session.ts           認證設定與伺服器端 session helper
   course-service.ts             課程／選課的核心邏輯，含併發控制
   course-utils.ts               狀態判斷與格式化
   course-constants.ts           分類、星期、節次
-  roles.ts                      各身分的入口網址（client / server 共用）
-  gallery.ts                    畫廊作品清單
+  roles.ts                      各身分的入口網址、畫廊管理員判斷（client / server 共用）
+  gallery.ts                    既有作品清單（public/gallery）
+  gallery-submissions.ts        投稿的建立、列表、下架／恢復
+  gallery-constants.ts          投稿限制、YouTube／網址解析（client / server 共用）
+  watermark.ts                  瀏覽器端縮圖＋壓水印
+  r2.ts                         R2 bucket 存取
 components/
   classroom-store.tsx           前端狀態：首屏由伺服器帶入，之後輪詢更新
   role-shell.tsx                server component，角色把關 + 首屏資料
   gallery.tsx                   畫廊格線 + 燈箱
-  site-header.tsx               公開頁面（首頁、規範）的頁首
+  site-header.tsx               公開頁面（首頁、規範、投稿）的頁首
+  submission-form.tsx           投稿表單
+  submission-list.tsx           我的投稿／管理投稿清單
 public/gallery/                 畫廊圖片（已縮好、壓好水印的 webp，大圖 + 縮圖）
 public/_headers                 Cloudflare 靜態檔的回應標頭（圖檔的 noai 標記）
 public/ai.txt                   Spawning ai.txt，拒絕 AI 訓練
@@ -114,8 +139,34 @@ proxy.ts                        edge 層的 cookie 檢查（非授權依據）
 直接讀 `public/` 的檔案。清單裡的 `width`／`height` 填大圖的實際像素（格線靠它預留版面），
 `color` 填圖片主色（載入前的底色）。透明背景的線稿請先鋪白底，否則在深色頁面上會看不見。
 
-影片作品（例如 YouTube Shorts）在作品上加 `youtube: "<影片 ID>"`，`images` 只放一張封面（同樣要壓水印）；
-燈箱裡會改嵌 YouTube 官方播放器（`youtube-nocookie.com`），影片檔不存在本站。
+影片作品（例如 YouTube Shorts）在作品上加 `youtube: "<影片 ID>"`，封面放 `cover`（同樣要壓水印）、`images` 可以留空；
+燈箱第一頁會嵌 YouTube 官方播放器（`youtube-nocookie.com`），影片檔不存在本站。
+
+### 畫廊投稿
+
+登入後在 `/submit` 投稿，首頁會把「投稿作品（新的在前）」接在 `lib/gallery.ts` 的既有作品前面。
+
+- **圖片處理在瀏覽器端**：Workers 上跑不了 sharp，所以 `lib/watermark.ts` 用 canvas 縮圖（大圖 1600×2000、縮圖寬 640）、
+  鋪白底、壓上跟既有作品一樣的水印後才上傳。水印用的是表單裡的「作者署名」。動圖只保留第一格。
+- **伺服器端**：`app/api/gallery/submissions` 檢查登入、欄位與檔頭（只收 WebP／JPEG／PNG），每人 24 小時最多 10 件，
+  圖檔存進 R2 的 `submissions/<id>/`，資料寫進 `GallerySubmission` 表。
+- **連結**：YouTube 連結可以不附圖（封面用 YouTube 縮圖、燈箱嵌播放器）；其他連結（推特、雲端等）只當「相關連結」，
+  該投稿至少要有一張圖。
+- **不審核、立即公開**；只有管理員（`lib/gallery-admins.ts` 的 `GALLERY_ADMIN_DISCORD_IDS`，以 Discord 使用者 ID 認人，跟身份組無關）
+  能在 `/manage` 下架。下架時 R2 圖檔搬到 `removed/<id>/`、`/uploads` 就讀不到，恢復時再搬回來。
+  投稿者本人不能自己刪除，要下架請找管理員（網站規範也這樣寫）。
+
+**第一次啟用前要做的事**：
+
+```bash
+npx wrangler r2 bucket create csbs-paintstarve-gallery   # 建立 R2 bucket（名稱對應 wrangler.jsonc）
+pnpm db:push                                             # 建立 GallerySubmission 表
+```
+
+> `pnpm db:push` 跑的是整份 `lib/sql/schema.sql`，除了建表之外也會照舊把所有課程的 `openAt`／`capacity`
+> 校正成全站統一值（檔案裡原本就有的行為）。
+>
+> 本機 `pnpm dev` 不需要真的 bucket：OpenNext 會用 wrangler 在本機模擬 R2，檔案存在 `.wrangler/state`。
 
 ### 防止 AI 盜用
 
@@ -201,14 +252,15 @@ pooler 是 transaction-mode 的 PgBouncer，會讓 advisory lock 的行為變得
 
 1. 建立 Neon 專案，取得 direct endpoint 連線字串
 2. 本機 `pnpm db:push && pnpm db:seed` 建表與匯入示範資料
-3. 設定 Cloudflare 的機密（**不要**寫進 `wrangler.jsonc`）：
+3. 建立畫廊投稿用的 R2 bucket：`npx wrangler r2 bucket create csbs-paintstarve-gallery`
+4. 設定 Cloudflare 的機密（**不要**寫進 `wrangler.jsonc`）：
    ```bash
    wrangler secret put DATABASE_URL
    wrangler secret put BETTER_AUTH_SECRET
    wrangler secret put BETTER_AUTH_URL          # 正式網址
    wrangler secret put DISCORD_CLIENT_ID        # 其餘 DISCORD_* 同理
    ```
-4. `pnpm preview` 先在本機的 workerd 跑過一遍，再 `pnpm deploy`
+5. `pnpm preview` 先在本機的 workerd 跑過一遍，再 `pnpm deploy`
 
 用 Cloudflare 的 Workers Builds（推 git 就自動部署）時：
 

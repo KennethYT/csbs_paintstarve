@@ -37,11 +37,17 @@ export type GalleryWork = {
   /** 額外的署名說明，例如代為投稿的人 */
   note?: string;
   /**
-   * 影片作品的 YouTube 影片 ID。有的話 images 只放一張封面，
-   * 燈箱裡改嵌 YouTube 官方播放器，影片本身不另存在本站。
+   * 影片作品的 YouTube 影片 ID。有的話燈箱第一頁嵌 YouTube 官方播放器，
+   * 影片本身不另存在本站；images 有圖的話接在影片後面。
    */
   youtube?: string;
-  /** 多張圖時第一張當封面，燈箱裡依序翻頁 */
+  /** 作品說明，顯示在燈箱 */
+  description?: string;
+  /** 相關連結（原始貼文、雲端資料夾等），顯示在燈箱 */
+  links?: string[];
+  /** 格線用的封面。沒給就用 images 第一張（影片作品通常只有封面、沒有 images） */
+  cover?: GalleryImage;
+  /** 燈箱裡依序翻頁的圖 */
   images: GalleryImage[];
 };
 
@@ -455,8 +461,7 @@ export const GALLERY_WORKS: GalleryWork[] = [
     title: "我畫了4小時30分鐘就為了這個",
     artists: [{ name: "陽陽", url: "https://www.youtube.com/@陽陽-360" }],
     youtube: "oyiQNsd6tQ8",
-    images: [
-      img("yangyang-short-1", 1080, 1920, "#d8e8e8")
-    ]
+    cover: img("yangyang-short-1", 1080, 1920, "#d8e8e8"),
+    images: []
   }
 ];

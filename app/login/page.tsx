@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { AuthHero } from "@/components/auth-hero";
 import { DiscordIcon } from "@/components/icons";
 import { authClient } from "@/lib/auth-client";
+import { COURSE_SYSTEM_ENABLED } from "@/lib/course-constants";
 
 /** 從網址參數推導出要顯示的錯誤訊息，不用 state 保存。 */
 function readUrlError(params: URLSearchParams) {
@@ -54,7 +55,11 @@ function LoginPageInner() {
     <AuthHero
       title="SIGN IN"
       subtitle="登入"
-      sidebarText="使用 Discord 登入，系統會依你在校內伺服器的身份組自動辨識學生或教師身分。"
+      sidebarText={
+        COURSE_SYSTEM_ENABLED
+          ? "使用 Discord 登入，系統會依你在校內伺服器的身份組自動辨識學生或教師身分。"
+          : "使用 Discord 登入後，可以把自己的作品投稿到畫廊。"
+      }
     >
       <button
         type="button"
@@ -77,7 +82,9 @@ function LoginPageInner() {
         <div className="login-automation-note__text">
           需要先加入校內 Discord 伺服器，並取得學生或教職員身份組。
           <br />
-          驗證通過後會自動導向對應的入口，不需要另外註冊帳號。
+          {COURSE_SYSTEM_ENABLED
+            ? "驗證通過後會自動導向對應的入口，不需要另外註冊帳號。"
+            : "驗證通過後會直接進入投稿頁面，不需要另外註冊帳號。"}
         </div>
       </div>
 

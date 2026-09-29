@@ -2,13 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ShieldIcon } from "@/components/icons";
 import { SiteHeader } from "@/components/site-header";
+import { COURSE_SYSTEM_ENABLED, GALLERY_SUBMISSION_ENABLED, LOGIN_ENABLED } from "@/lib/course-constants";
 
 export const metadata: Metadata = {
   title: "網站規範 | 暑期選修作品畫廊"
 };
 
+const CHINESE_NUMBERS = ["一", "二", "三", "四", "五", "六"];
+
 /** 網站規範。純靜態內容，要改規則直接改這個檔案。 */
 export default function RulesPage() {
+  // 「投稿作品」一節隨開關出現或消失，後面的章節編號跟著遞補
+  const offset = GALLERY_SUBMISSION_ENABLED ? 1 : 0;
+
   return (
     <div className="app-shell">
       <SiteHeader>
@@ -25,7 +31,7 @@ export default function RulesPage() {
             <p className="landing-hero__text">
               本站展示的作品都是同學們的原創，著作權屬於各自的作者。瀏覽或使用本站，即表示你同意以下規範。
             </p>
-            <p className="rules__updated">最後更新：2026 年 9 月 28 日</p>
+            <p className="rules__updated">最後更新：2026 年 9 月 29 日</p>
           </header>
 
           <section className="card rules__section rules__section--highlight">
@@ -59,17 +65,34 @@ export default function RulesPage() {
             </ul>
           </section>
 
+          {GALLERY_SUBMISSION_ENABLED ? (
+            <section className="card rules__section">
+              <h2 className="rules__title">{CHINESE_NUMBERS[1]}、投稿作品</h2>
+              <ol className="rules__list">
+                <li>只能投稿自己的作品，或已取得作者本人同意的作品，並在署名標示原作者。</li>
+                <li>禁止投稿 AI 生成，或主要由 AI 產生的圖片。</li>
+                <li>禁止投稿不雅、暴力、歧視、騷擾或侵害他人隱私的內容。</li>
+                <li>投稿送出後會立即公開；管理員可以不經通知下架違反規範的作品。</li>
+                <li>上傳的圖片會自動縮小，並壓上作者署名與「禁止 AI 學習」的浮水印。</li>
+              </ol>
+            </section>
+          ) : null}
+
           <section className="card rules__section">
-            <h2 className="rules__title">二、使用本站</h2>
+            <h2 className="rules__title">{CHINESE_NUMBERS[1 + offset]}、使用本站</h2>
             <ol className="rules__list">
-              <li>帳號僅限本人使用，不得借給他人或代替他人選課。</li>
-              <li>禁止用程式、腳本或爬蟲大量存取本站，包括自動搶課與批次下載作品。</li>
+              {LOGIN_ENABLED ? (
+                <li>帳號僅限本人使用，不得借給他人{COURSE_SYSTEM_ENABLED ? "或代替他人選課" : ""}。</li>
+              ) : null}
+              <li>
+                禁止用程式、腳本或爬蟲大量存取本站，包括{COURSE_SYSTEM_ENABLED ? "自動搶課與" : ""}批次下載作品。
+              </li>
               <li>不得嘗試干擾、攻擊本站，或繞過權限控管。</li>
             </ol>
           </section>
 
           <section className="card rules__section">
-            <h2 className="rules__title">三、本站的防護措施</h2>
+            <h2 className="rules__title">{CHINESE_NUMBERS[2 + offset]}、本站的防護措施</h2>
             <ul className="rules__list">
               <li>所有展示的圖片都已縮小，並壓上作者署名與「禁止 AI 學習」的浮水印；原始高解析檔案不會放在本站。</li>
               <li>影片作品直接嵌入作者在 YouTube 上的影片，本站不另外保存影片檔。</li>
@@ -81,7 +104,7 @@ export default function RulesPage() {
           </section>
 
           <section className="card rules__section">
-            <h2 className="rules__title">四、下架與回報</h2>
+            <h2 className="rules__title">{CHINESE_NUMBERS[3 + offset]}、下架與回報</h2>
             <ul className="rules__list">
               <li>作者想下架作品、修改署名或標題，請在校內 Discord 伺服器聯絡管理員。</li>
               <li>發現本站作品被違規使用，也請向管理員回報，並附上出處連結。</li>

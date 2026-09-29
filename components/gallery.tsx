@@ -4,11 +4,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent, MouseEvent, TouchEvent } from "react";
-import { CloseIcon, NextIcon, PagesIcon, PlayIcon, PrevIcon } from "@/components/icons";
-import type { GalleryArtist, GalleryWork } from "@/lib/gallery";
+import { CloseIcon, LinkIcon, NextIcon, PagesIcon, PlayIcon, PrevIcon } from "@/components/icons";
+import type { GalleryArtist, GalleryImage, GalleryWork } from "@/lib/gallery";
+import { linkLabel } from "@/lib/gallery-constants";
 
-/** 燈箱裡的一頁：所有作品的所有圖片攤平成一條，左右鍵可以一路翻到下一件作品。 */
-type Slide = { work: GalleryWork; imageIndex: number };
+/**
+ * 燈箱裡的一頁：所有作品的所有頁攤平成一條，左右鍵可以一路翻到下一件作品。
+ * 影片作品的第一頁是 YouTube 播放器（image 為 null），有附圖的話接在後面。
+ */
+type Slide = { work: GalleryWork; image: GalleryImage | null; page: number; pageCount: number };
 
 const SWIPE_THRESHOLD = 50;
 
@@ -24,6 +28,10 @@ function blockImageContextMenu(event: MouseEvent) {
 
 function artistNames(artists: GalleryArtist[]) {
   return artists.map((artist) => artist.name).join("、");
+}
+
+function coverOf(work: GalleryWork) {
+  return work.cover ?? work.images[0];
 }
 
 function ArtistLinks({ artists }: Readonly<{ artists: GalleryArtist[] }>) {
@@ -44,7 +52,7 @@ function ArtistLinks({ artists }: Readonly<{ artists: GalleryArtist[] }>) {
 /**
  * 首頁畫廊：瀑布流格線 + 燈箱。
  *
- * 圖片一律 unoptimized：public/gallery 裡已經是縮好的 webp，而部署到 Workers 後
+ * 圖片一律 unoptimized：public/gallery 與投稿圖（/uploads）都已經是縮好的圖，而部署到 Workers 後
  * /_next/image 不會真的壓縮（沒有 IMAGES binding），只是多繞一趟 Worker。
  *
  * 燈箱用原生 <dialog> + showModal()：背景自動 inert、Esc 關閉、關閉後焦點回到原本的縮圖，
@@ -60,8 +68,9 @@ export function Gallery({ works }: Readonly<{ works: GalleryWork[] }>) {
     const firstSlide: number[] = [];
 
     for (const work of works) {
+      const pages: (GalleryImage | null)[] = work.youtube ? [null, ...work.images] : work.images;
       firstSlide.push(allSlides.length);
-      work.images.forEach((_, imageIndex) => allSlides.push({ work, imageIndex }));
+      pages.forEach((image, page) => allSlides.push({ work, image, page, pageCount: pages.length }));
     }
 
     return { slides: allSlides, firstSlideOf: firstSlide };
@@ -91,9 +100,12 @@ export function Gallery({ works }: Readonly<{ works: GalleryWork[] }>) {
     }
 
     for (const offset of [1, -1]) {
-      const { work, imageIndex } = slides[(current + offset + slides.length) % slides.length];
-      const preload = new window.Image();
-      preload.src = work.images[imageIndex].src;
+      const { image } = slides[(current + offset + slides.length) % slides.length];
+
+      if (image) {
+        const preload = new window.Image();
+        preload.src = image.src;
+      }
     }
   }, [current, slides]);
 
@@ -139,17 +151,21 @@ export function Gallery({ works }: Readonly<{ works: GalleryWork[] }>) {
     }
   };
 
-  const image = slide ? slide.work.images[slide.imageIndex] : null;
-  const pageCount = slide ? slide.work.images.length : 0;
+  const work = slide?.work;
+  const image = slide?.image ?? null;
 
   return (
     <>
       <ul className="gallery" aria-label="作品列表" onContextMenu={blockImageContextMenu}>
-        {works.map((work, workIndex) => {
-          const cover = work.images[0];
+        {works.map((item, workIndex) => {
+          const cover = coverOf(item);
+
+          if (!cover) {
+            return null;
+          }
 
           return (
-            <li key={work.id} className="gallery__item">
+            <li key={item.id} className="gallery__item">
               <button type="button" className="gallery__card" onClick={() => setCurrent(firstSlideOf[workIndex])}>
                 <span className="gallery__thumb" style={{ backgroundColor: cover.color }}>
                   <Image
@@ -161,21 +177,21 @@ export function Gallery({ works }: Readonly<{ works: GalleryWork[] }>) {
                     draggable={false}
                     className="gallery__image"
                   />
-                  {work.youtube ? (
+                  {item.youtube ? (
                     <span className="gallery__badge">
                       <PlayIcon aria-hidden="true" />
-                      影片
+                      {item.images.length ? `影片 + ${item.images.length} 張` : "影片"}
                     </span>
-                  ) : work.images.length > 1 ? (
+                  ) : item.images.length > 1 ? (
                     <span className="gallery__badge">
                       <PagesIcon aria-hidden="true" />
-                      {work.images.length} 張
+                      {item.images.length} 張
                     </span>
                   ) : null}
                 </span>
                 <span className="gallery__caption">
-                  {work.title ? <span className="gallery__title">{work.title}</span> : null}
-                  <span className="gallery__artist">{artistNames(work.artists)}</span>
+                  {item.title ? <span className="gallery__title">{item.title}</span> : null}
+                  <span className="gallery__artist">{artistNames(item.artists)}</span>
                 </span>
               </button>
             </li>
@@ -194,7 +210,7 @@ export function Gallery({ works }: Readonly<{ works: GalleryWork[] }>) {
         onTouchEnd={handleTouchEnd}
         onContextMenu={blockImageContextMenu}
       >
-        {slide && image ? (
+        {slide && work ? (
           <div className="lightbox__layout" data-backdrop>
             <button type="button" className="lightbox__button lightbox__close" onClick={close} aria-label="關閉">
               <CloseIcon aria-hidden="true" />
@@ -212,22 +228,11 @@ export function Gallery({ works }: Readonly<{ works: GalleryWork[] }>) {
                 </button>
               ) : null}
 
-              {slide.work.youtube ? (
-                // 影片作品直接嵌 YouTube 官方播放器（nocookie 網域），影片不另存在本站
-                <iframe
-                  key={slide.work.youtube}
-                  src={`https://www.youtube-nocookie.com/embed/${slide.work.youtube}?rel=0&playsinline=1`}
-                  title={`${slide.work.title ?? "影片作品"} — ${artistNames(slide.work.artists)}`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                  allowFullScreen
-                  className="lightbox__video"
-                />
-              ) : (
+              {image ? (
                 <Image
                   key={image.src}
                   src={image.src}
-                  alt={[slide.work.title, image.caption].filter(Boolean).join("：") || `${artistNames(slide.work.artists)} 的作品`}
+                  alt={[work.title, image.caption].filter(Boolean).join("：") || `${artistNames(work.artists)} 的作品`}
                   width={image.width}
                   height={image.height}
                   unoptimized
@@ -235,6 +240,17 @@ export function Gallery({ works }: Readonly<{ works: GalleryWork[] }>) {
                   draggable={false}
                   className="lightbox__image"
                   style={{ backgroundColor: image.color }}
+                />
+              ) : (
+                // 影片作品直接嵌 YouTube 官方播放器（nocookie 網域），影片不另存在本站
+                <iframe
+                  key={work.youtube}
+                  src={`https://www.youtube-nocookie.com/embed/${work.youtube}?rel=0&playsinline=1`}
+                  title={`${work.title ?? "影片作品"} — ${artistNames(work.artists)}`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                  className="lightbox__video"
                 />
               )}
 
@@ -251,19 +267,36 @@ export function Gallery({ works }: Readonly<{ works: GalleryWork[] }>) {
             </div>
 
             <div className="lightbox__caption" id="lightbox-caption">
-              {slide.work.title ? <div className="lightbox__title">{slide.work.title}</div> : null}
+              {work.title ? <div className="lightbox__title">{work.title}</div> : null}
               <div className="lightbox__meta">
-                <ArtistLinks artists={slide.work.artists} />
-                {slide.work.note ? <span className="lightbox__note">{slide.work.note}</span> : null}
+                <ArtistLinks artists={work.artists} />
+                {work.note ? <span className="lightbox__note">{work.note}</span> : null}
               </div>
-              {pageCount > 1 || image.caption ? (
+              {slide.pageCount > 1 || image?.caption ? (
                 <div className="lightbox__page">
-                  {pageCount > 1 ? (
+                  {slide.pageCount > 1 ? (
                     <span className="lightbox__counter">
-                      {slide.imageIndex + 1} / {pageCount}
+                      {slide.page + 1} / {slide.pageCount}
                     </span>
                   ) : null}
-                  {image.caption}
+                  {image?.caption}
+                </div>
+              ) : null}
+              {work.description ? <p className="lightbox__description">{work.description}</p> : null}
+              {work.links?.length ? (
+                <div className="lightbox__links">
+                  <LinkIcon aria-hidden="true" />
+                  {work.links.map((url) => (
+                    <a
+                      key={url}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow ugc"
+                      className="lightbox__artist-link"
+                    >
+                      {linkLabel(url)}
+                    </a>
+                  ))}
                 </div>
               ) : null}
               <div className="lightbox__rights">

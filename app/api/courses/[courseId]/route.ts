@@ -1,10 +1,16 @@
-import { jsonError, jsonOk, readJson } from "@/lib/api";
+import { courseSystemClosed, jsonError, jsonOk, readJson } from "@/lib/api";
 import { getSessionUserFromRequest } from "@/lib/session";
 import { CourseError, deleteCourse, getCourse, updateCourse } from "@/lib/course-service";
 import { isPayloadError, parseCoursePayload } from "@/lib/course-validation";
 import type { CreateCoursePayload } from "@/lib/types";
 
 export async function GET(request: Request, context: { params: Promise<{ courseId: string }> }) {
+  const closed = courseSystemClosed();
+
+  if (closed) {
+    return closed;
+  }
+
   const user = await getSessionUserFromRequest(request);
 
   if (!user) {
@@ -27,6 +33,12 @@ export async function GET(request: Request, context: { params: Promise<{ courseI
 }
 
 export async function PUT(request: Request, context: { params: Promise<{ courseId: string }> }) {
+  const closed = courseSystemClosed();
+
+  if (closed) {
+    return closed;
+  }
+
   const user = await getSessionUserFromRequest(request);
 
   if (!user) {
@@ -59,6 +71,12 @@ export async function PUT(request: Request, context: { params: Promise<{ courseI
 }
 
 export async function DELETE(request: Request, context: { params: Promise<{ courseId: string }> }) {
+  const closed = courseSystemClosed();
+
+  if (closed) {
+    return closed;
+  }
+
   const user = await getSessionUserFromRequest(request);
 
   if (!user) {

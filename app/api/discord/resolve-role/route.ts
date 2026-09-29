@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
+import { loginClosed } from "@/lib/api";
 import { getAuth } from "@/lib/auth";
 import { resolveDiscordRoleForUser } from "@/lib/discord";
 
 export async function POST(request: Request) {
+  const closed = loginClosed();
+
+  if (closed) {
+    return closed;
+  }
+
   const session = await getAuth().api.getSession({ headers: request.headers });
 
   if (!session?.user?.id) {

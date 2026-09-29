@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { courseSystemClosed } from "@/lib/api";
 import { switchDiscordRole } from "@/lib/discord";
 import { getSessionUserFromRequest } from "@/lib/session";
 
@@ -8,6 +9,12 @@ import { getSessionUserFromRequest } from "@/lib/session";
  * （見 lib/discord.ts 的 switchDiscordRole）。
  */
 export async function POST(request: Request) {
+  const closed = courseSystemClosed();
+
+  if (closed) {
+    return closed;
+  }
+
   const user = await getSessionUserFromRequest(request);
 
   if (!user) {

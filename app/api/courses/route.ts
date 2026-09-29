@@ -1,4 +1,4 @@
-import { jsonError, jsonOk, readJson } from "@/lib/api";
+import { courseSystemClosed, jsonError, jsonOk, readJson } from "@/lib/api";
 import { getSessionUserFromRequest } from "@/lib/session";
 import { createCourse, getCoursesSnapshot } from "@/lib/course-service";
 import { isPayloadError, parseCoursePayload } from "@/lib/course-validation";
@@ -6,6 +6,12 @@ import { COURSE_CREATION_ENABLED } from "@/lib/course-constants";
 import type { CreateCoursePayload } from "@/lib/types";
 
 export async function GET(request: Request) {
+  const closed = courseSystemClosed();
+
+  if (closed) {
+    return closed;
+  }
+
   const user = await getSessionUserFromRequest(request);
 
   if (!user) {
@@ -17,6 +23,12 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const closed = courseSystemClosed();
+
+  if (closed) {
+    return closed;
+  }
+
   const user = await getSessionUserFromRequest(request);
 
   if (!user) {

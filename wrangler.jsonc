@@ -15,7 +15,17 @@
 
   "observability": {
     "enabled": true
-  }
+  },
+
+  // 畫廊投稿的圖檔（見 lib/r2.ts）。部署前要先建立 bucket：
+  //   npx wrangler r2 bucket create csbs-paintstarve-gallery
+  // 本機 `pnpm dev` 會用 wrangler 模擬，資料存在 .wrangler/state（已在 .gitignore 內）。
+  "r2_buckets": [
+    {
+      "binding": "GALLERY_BUCKET",
+      "bucket_name": "csbs-paintstarve-gallery"
+    }
+  ]
 
   // 機密（DATABASE_URL、BETTER_AUTH_SECRET、DISCORD_*）不寫在這裡。
   // 正式環境用 `wrangler secret put <NAME>` 或 Cloudflare 後台設定；
